@@ -1,0 +1,66 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    color: #0f172a;
+    font-size: 15px;
+  }
+
+  /* ===== إصلاح الوضع الفاتح - تعتيم الخطوط وتكبيرها ===== */
+  /* أي نص يستخدم opacity أو شفافية في الوضع الفاتح يصبح داكناً وواضحاً */
+  :root {
+    --text-light-primary: #1e293b;
+    --text-light-secondary: #334155;
+    --text-light-muted: #475569;
+  }
+}
+
+/* ===== تكبير الخطوط العامة في الوضع الفاتح ===== */
+.font-mono {
+  letter-spacing: 0.01em;
+}
+
+/* إصلاح النصوص الشفافة في الوضع الفاتح */
+/* أي كلاس يحتوي على text-white مع opacity في الوضع الفاتح */
+.bg-stone-50 .font-mono,
+.bg-stone-50 p,
+.bg-stone-50 span,
+.bg-stone-50 h1,
+.bg-stone-50 h2,
+.bg-stone-50 h3,
+.bg-stone-50 h4 {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Safe Area Support for Mobile Devices */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+  .safe-area-left {
+    padding-left: max(env(safe-area-inset-left), 0px);
+  }
+  .safe-area-right {
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+}
+
+/* Prevent pull-to-refresh on mobile */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Smooth scrolling for mobile */
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
