@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../page';
 import AppConnectionModal from './AppConnectionModal';
+import { useAuth } from '../../../contexts/AuthContext';
+import { UI_TO_DB_KEY, useIntegrations } from '../../../hooks/useIntegrations';
 
 interface AppConnection {
   id: string;
@@ -28,6 +30,8 @@ const AccountConnectionsSection = () => {
   const { t, i18n } = useTranslation();
   const { isDark } = useTheme();
   const isRTL = i18n.language === 'ar';
+  const { user, isAuthenticated } = useAuth();
+  const { enabledIntegrations, userStatusByKey, setStatus } = useIntegrations(user?.id);
 
   const [connections, setConnections] = useState<AppConnection[]>([
     {
@@ -55,19 +59,17 @@ const AccountConnectionsSection = () => {
         'تنظيم تلقائي حسب الأولوية',
         'اقتراحات ردود ذكية'
       ],
-      tools: ['Gmail API', 'Natural Language Processing', 'Smart Filters', 'Auto-categorization'],
-      toolsAr: ['Gmail API', 'معالجة اللغة الطبيعية', 'فلاتر ذكية', 'تصنيف تلقائي'],
+      tools: ['Gmail API', 'AI Classifier', 'Auto Responder'],
+      toolsAr: ['واجهة جيميل', 'مصنف ذكي', 'رد تلقائي'],
       howItWorks: [
         'Connect your Gmail account securely',
-        'Agent analyzes your email patterns',
-        'Automatically categorizes incoming emails',
-        'Suggests replies and actions'
+        'Choose automation rules and preferences',
+        'AI manages your inbox automatically'
       ],
       howItWorksAr: [
-        'اربط حساب Gmail بشكل آمن',
-        'الوكيل يحلل أنماط بريدك',
-        'يصنف الرسائل الواردة تلقائياً',
-        'يقترح ردود وإجراءات'
+        'اربط حساب جيميل بأمان',
+        'اختر قواعد الأتمتة والتفضيلات',
+        'الذكاء يدير بريدك تلقائياً'
       ]
     },
     {
@@ -78,396 +80,376 @@ const AccountConnectionsSection = () => {
       color: '#25D366',
       category: 'communication',
       isConnected: false,
-      description: 'Messaging automation',
-      descriptionAr: 'أتمتة الرسائل',
-      status: 'available',
-      automationTasks: ['Auto-reply messages', 'Send broadcasts', 'Schedule messages'],
-      automationTasksAr: ['الرد التلقائي', 'إرسال رسائل جماعية', 'جدولة الرسائل'],
+      description: 'Customer messaging automation',
+      descriptionAr: 'أتمتة رسائل العملاء',
+      status: 'coming-soon',
+      automationTasks: ['Auto-reply to messages', 'Send notifications', 'Customer support bot'],
+      automationTasksAr: ['رد تلقائي على الرسائل', 'إرسال إشعارات', 'بوت دعم العملاء'],
       benefits: [
-        'Instant auto-replies to customers',
-        'Schedule messages for perfect timing',
-        'Broadcast to multiple contacts',
-        'Never miss a customer message'
+        '24/7 automated customer support',
+        'Instant response to customers',
+        'Bulk message broadcasting',
+        'Lead generation automation'
       ],
       benefitsAr: [
-        'ردود فورية تلقائية للعملاء',
-        'جدولة الرسائل في الوقت المثالي',
-        'إرسال جماعي لعدة جهات اتصال',
-        'لن تفوتك رسالة عميل'
+        'دعم عملاء آلي 24/7',
+        'رد فوري على العملاء',
+        'إرسال رسائل جماعية',
+        'أتمتة توليد العملاء المحتملين'
       ],
-      tools: ['WhatsApp Business API', 'Message Templates', 'Auto-responder', 'Broadcast System'],
-      toolsAr: ['WhatsApp Business API', 'قوالب الرسائل', 'الرد التلقائي', 'نظام البث'],
+      tools: ['WhatsApp Business API', 'Chatbot AI', 'Message Scheduler'],
+      toolsAr: ['واجهة واتساب بيزنس', 'بوت ذكي', 'جدولة الرسائل'],
       howItWorks: [
         'Connect WhatsApp Business account',
-        'Set up auto-reply templates',
-        'Agent responds to common queries',
-        'Schedule broadcasts and reminders'
+        'Set up automated responses',
+        'Monitor and optimize conversations'
       ],
       howItWorksAr: [
-        'اربط حساب واتساب بزنس',
-        'أنشئ قوالب الرد التلقائي',
-        'الوكيل يرد على الاستفسارات الشائعة',
-        'جدولة البث والتذكيرات'
+        'اربط حساب واتساب بيزنس',
+        'إعداد الردود التلقائية',
+        'راقب وحسن المحادثات'
       ]
     },
     {
       id: 'google-docs',
       name: 'Google Docs',
-      nameAr: 'مستندات قوقل',
-      logoUrl: 'https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png',
+      nameAr: 'مستندات جوجل',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/76/Google_Docs_2020_Logo.svg',
       color: '#4285F4',
       category: 'productivity',
       isConnected: false,
-      description: 'Document creation and editing',
-      descriptionAr: 'إنشاء وتحرير المستندات',
+      description: 'Document creation and management',
+      descriptionAr: 'إنشاء وإدارة المستندات',
       status: 'available',
-      automationTasks: ['Auto-generate documents', 'Format content', 'Export reports'],
-      automationTasksAr: ['إنشاء المستندات تلقائياً', 'تنسيق المحتوى', 'تصدير التقارير'],
+      automationTasks: ['Auto-generate reports', 'Template filling', 'Document sharing'],
+      automationTasksAr: ['إنشاء تقارير تلقائياً', 'ملء القوالب', 'مشاركة المستندات'],
       benefits: [
-        'Auto-generate reports from data',
-        'Consistent document formatting',
-        'Quick content creation',
-        'Export to multiple formats'
+        'Automatically generate professional documents',
+        'Fill templates with your data',
+        'Collaborative document workflows',
+        'Version control and tracking'
       ],
       benefitsAr: [
-        'إنشاء تقارير تلقائية من البيانات',
-        'تنسيق موحد للمستندات',
-        'إنشاء محتوى سريع',
-        'تصدير لصيغ متعددة'
+        'إنشاء مستندات احترافية تلقائياً',
+        'ملء القوالب ببياناتك',
+        'تدفقات عمل تعاونية',
+        'تتبع الإصدارات والتغييرات'
       ],
-      tools: ['Google Docs API', 'Document Templates', 'Auto-formatting', 'Content Generator'],
-      toolsAr: ['Google Docs API', 'قوالب المستندات', 'تنسيق تلقائي', 'مولد المحتوى'],
+      tools: ['Google Docs API', 'Template Engine', 'Document Generator'],
+      toolsAr: ['واجهة المستندات', 'محرك القوالب', 'مولد المستندات'],
       howItWorks: [
-        'Connect Google Docs account',
-        'Choose document templates',
-        'Agent generates content automatically',
-        'Format and export as needed'
+        'Connect your Google account',
+        'Select document templates',
+        'AI generates and manages documents'
       ],
       howItWorksAr: [
-        'اربط حساب مستندات قوقل',
+        'اربط حساب جوجل',
         'اختر قوالب المستندات',
-        'الوكيل ينشئ المحتوى تلقائياً',
-        'تنسيق وتصدير حسب الحاجة'
+        'الذكاء ينشئ ويدير المستندات'
       ]
     },
     {
       id: 'google-drive',
       name: 'Google Drive',
-      nameAr: 'قوقل درايف',
-      logoUrl: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png',
+      nameAr: 'جوجل درايف',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png',
       color: '#0F9D58',
       category: 'productivity',
       isConnected: false,
-      description: 'File storage and sharing',
-      descriptionAr: 'تخزين ومشاركة الملفات',
+      description: 'File storage and organization',
+      descriptionAr: 'تخزين وتنظيم الملفات',
       status: 'available',
-      automationTasks: ['Auto-organize files', 'Backup documents', 'Share folders'],
-      automationTasksAr: ['تنظيم الملفات تلقائياً', 'نسخ احتياطي', 'مشاركة المجلدات'],
+      automationTasks: ['Auto-organize files', 'Backup automation', 'Share management'],
+      automationTasksAr: ['تنظيم الملفات تلقائياً', 'أتمتة النسخ الاحتياطي', 'إدارة المشاركة'],
       benefits: [
-        'Auto-organize files by type',
-        'Automatic backup scheduling',
-        'Smart folder sharing',
-        'Never lose important files'
+        'Automatic file organization',
+        'Smart folder management',
+        'Automated backups',
+        'Secure file sharing'
       ],
       benefitsAr: [
-        'تنظيم تلقائي حسب النوع',
-        'جدولة نسخ احتياطي تلقائية',
-        'مشاركة ذكية للمجلدات',
-        'لن تفقد ملفات مهمة'
+        'تنظيم الملفات تلقائياً',
+        'إدارة المجلدات بذكاء',
+        'نسخ احتياطية تلقائية',
+        'مشاركة آمنة للملفات'
       ],
-      tools: ['Google Drive API', 'File Organizer', 'Auto-backup', 'Smart Sharing'],
-      toolsAr: ['Google Drive API', 'منظم الملفات', 'نسخ احتياطي تلقائي', 'مشاركة ذكية'],
+      tools: ['Google Drive API', 'File Organizer', 'Backup Manager'],
+      toolsAr: ['واجهة درايف', 'منظم الملفات', 'مدير النسخ'],
       howItWorks: [
         'Connect Google Drive account',
         'Set organization rules',
-        'Agent organizes files automatically',
-        'Schedule backups and sharing'
+        'Files are managed automatically'
       ],
       howItWorksAr: [
-        'اربط حساب قوقل درايف',
+        'اربط حساب جوجل درايف',
         'حدد قواعد التنظيم',
-        'الوكيل ينظم الملفات تلقائياً',
-        'جدولة النسخ الاحتياطي والمشاركة'
+        'الملفات تُدار تلقائياً'
       ]
     },
     {
       id: 'google-sheets',
       name: 'Google Sheets',
-      nameAr: 'جداول قوقل',
-      logoUrl: 'https://www.gstatic.com/images/branding/product/2x/sheets_2020q4_48dp.png',
-      color: '#0F9D58',
+      nameAr: 'جداول جوجل',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Google_Sheets_2020_Logo.svg',
+      color: '#34A853',
       category: 'productivity',
       isConnected: false,
-      description: 'Spreadsheet automation',
-      descriptionAr: 'أتمتة الجداول',
+      description: 'Spreadsheet automation and reporting',
+      descriptionAr: 'أتمتة الجداول والتقارير',
       status: 'available',
-      automationTasks: ['Generate reports', 'Auto-calculate', 'Create charts'],
-      automationTasksAr: ['إنشاء التقارير', 'حساب تلقائي', 'إنشاء الرسوم البيانية'],
+      automationTasks: ['Auto-update data', 'Generate charts', 'Send reports'],
+      automationTasksAr: ['تحديث البيانات تلقائياً', 'إنشاء مخططات', 'إرسال تقارير'],
       benefits: [
-        'Auto-generate data reports',
-        'Real-time calculations',
-        'Visual charts and graphs',
-        'Data analysis automation'
+        'Real-time data synchronization',
+        'Automated report generation',
+        'Smart data analysis',
+        'Scheduled updates'
       ],
       benefitsAr: [
-        'إنشاء تقارير بيانات تلقائية',
-        'حسابات فورية',
-        'رسوم بيانية مرئية',
-        'أتمتة تحليل البيانات'
+        'مزامنة البيانات فورياً',
+        'إنشاء تقارير تلقائياً',
+        'تحليل البيانات بذكاء',
+        'تحديثات مجدولة'
       ],
-      tools: ['Google Sheets API', 'Formula Generator', 'Chart Creator', 'Data Analyzer'],
-      toolsAr: ['Google Sheets API', 'مولد الصيغ', 'منشئ الرسوم', 'محلل البيانات'],
+      tools: ['Google Sheets API', 'Data Sync', 'Report Generator'],
+      toolsAr: ['واجهة الجداول', 'مزامنة البيانات', 'مولد التقارير'],
       howItWorks: [
-        'Connect Google Sheets account',
-        'Import your data',
-        'Agent creates formulas and charts',
-        'Generate automated reports'
+        'Connect Google Sheets',
+        'Choose automation triggers',
+        'Data updates automatically'
       ],
       howItWorksAr: [
-        'اربط حساب جداول قوقل',
-        'استورد بياناتك',
-        'الوكيل ينشئ الصيغ والرسوم',
-        'إنشاء تقارير تلقائية'
+        'اربط جداول جوجل',
+        'اختر محفزات الأتمتة',
+        'البيانات تتحدث تلقائياً'
       ]
     },
     {
       id: 'google-calendar',
       name: 'Google Calendar',
-      nameAr: 'تقويم قوقل',
-      logoUrl: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_48dp.png',
-      color: '#4285F4',
+      nameAr: 'تقويم جوجل',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg',
+      color: '#1A73E8',
       category: 'productivity',
       isConnected: false,
-      description: 'Schedule and meeting management',
-      descriptionAr: 'إدارة المواعيد والاجتماعات',
+      description: 'Scheduling and meeting automation',
+      descriptionAr: 'أتمتة الجدولة والاجتماعات',
       status: 'available',
-      automationTasks: ['Auto-schedule meetings', 'Send reminders', 'Sync events'],
-      automationTasksAr: ['جدولة الاجتماعات تلقائياً', 'إرسال التذكيرات', 'مزامنة الأحداث'],
+      automationTasks: ['Auto-schedule meetings', 'Send reminders', 'Block focus time'],
+      automationTasksAr: ['جدولة الاجتماعات تلقائياً', 'إرسال تذكيرات', 'حجز وقت التركيز'],
       benefits: [
-        'Smart meeting scheduling',
-        'Automatic reminders',
-        'Conflict detection',
-        'Multi-calendar sync'
+        'Automatic meeting scheduling',
+        'Smart reminders and follow-ups',
+        'Time blocking automation',
+        'Calendar conflict resolution'
       ],
       benefitsAr: [
-        'جدولة ذكية للاجتماعات',
-        'تذكيرات تلقائية',
-        'كشف التعارضات',
-        'مزامنة عدة تقاويم'
+        'جدولة اجتماعات تلقائية',
+        'تذكيرات ومتابعات ذكية',
+        'أتمتة حجز الأوقات',
+        'حل تعارضات المواعيد'
       ],
-      tools: ['Google Calendar API', 'Smart Scheduler', 'Reminder System', 'Conflict Detector'],
-      toolsAr: ['Google Calendar API', 'جدولة ذكية', 'نظام التذكيرات', 'كاشف التعارضات'],
+      tools: ['Google Calendar API', 'Scheduler', 'Reminder Engine'],
+      toolsAr: ['واجهة التقويم', 'الجدولة', 'محرك التذكير'],
       howItWorks: [
         'Connect Google Calendar',
-        'Set availability preferences',
-        'Agent schedules meetings automatically',
-        'Sends reminders before events'
+        'Set scheduling preferences',
+        'Meetings are managed automatically'
       ],
       howItWorksAr: [
-        'اربط تقويم قوقل',
-        'حدد أوقات التوفر',
-        'الوكيل يجدول الاجتماعات تلقائياً',
-        'يرسل تذكيرات قبل المواعيد'
+        'اربط تقويم جوجل',
+        'حدد تفضيلات الجدولة',
+        'الاجتماعات تُدار تلقائياً'
       ]
     },
     {
       id: 'notion',
       name: 'Notion',
       nameAr: 'نوشن',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Notion-logo.svg',
       color: '#000000',
       category: 'productivity',
       isConnected: false,
-      description: 'Workspace and notes management',
-      descriptionAr: 'إدارة مساحة العمل والملاحظات',
+      description: 'Workspace and knowledge management',
+      descriptionAr: 'إدارة مساحة العمل والمعرفة',
       status: 'available',
-      automationTasks: ['Create pages', 'Update databases', 'Organize notes'],
-      automationTasksAr: ['إنشاء الصفحات', 'تحديث قواعد البيانات', 'تنظيم الملاحظات'],
+      automationTasks: ['Auto-create tasks', 'Sync notes', 'Generate summaries'],
+      automationTasksAr: ['إنشاء مهام تلقائياً', 'مزامنة الملاحظات', 'تلخيص تلقائي'],
       benefits: [
-        'Auto-create project pages',
-        'Database auto-updates',
-        'Smart note organization',
-        'Template automation'
+        'Automated workspace organization',
+        'Smart task creation',
+        'AI-powered summaries',
+        'Knowledge base automation'
       ],
       benefitsAr: [
-        'إنشاء صفحات المشاريع تلقائياً',
-        'تحديثات تلقائية لقواعد البيانات',
-        'تنظيم ذكي للملاحظات',
-        'أتمتة القوالب'
+        'تنظيم مساحة العمل تلقائياً',
+        'إنشاء مهام بذكاء',
+        'تلخيصات بالذكاء الاصطناعي',
+        'أتمتة قاعدة المعرفة'
       ],
-      tools: ['Notion API', 'Page Generator', 'Database Manager', 'Template System'],
-      toolsAr: ['Notion API', 'مولد الصفحات', 'مدير قواعد البيانات', 'نظام القوالب'],
+      tools: ['Notion API', 'Task Manager', 'AI Summarizer'],
+      toolsAr: ['واجهة نوشن', 'مدير المهام', 'ملخص ذكي'],
       howItWorks: [
         'Connect Notion workspace',
-        'Set up templates',
-        'Agent creates and updates pages',
-        'Organize content automatically'
+        'Choose automation templates',
+        'Workspace updates automatically'
       ],
       howItWorksAr: [
-        'اربط مساحة عمل نوشن',
-        'أنشئ القوالب',
-        'الوكيل ينشئ ويحدث الصفحات',
-        'تنظيم المحتوى تلقائياً'
+        'اربط مساحة نوشن',
+        'اختر قوالب الأتمتة',
+        'المساحة تتحدث تلقائياً'
       ]
     },
     {
       id: 'trello',
       name: 'Trello',
       nameAr: 'تريلو',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/trello.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Trello_logo.svg',
       color: '#0079BF',
       category: 'productivity',
       isConnected: false,
-      description: 'Project management',
-      descriptionAr: 'إدارة المشاريع',
-      status: 'available',
-      automationTasks: ['Create cards', 'Move tasks', 'Assign members'],
-      automationTasksAr: ['إنشاء البطاقات', 'نقل المهام', 'تعيين الأعضاء'],
+      description: 'Project management automation',
+      descriptionAr: 'أتمتة إدارة المشاريع',
+      status: 'coming-soon',
+      automationTasks: ['Auto-create cards', 'Move tasks', 'Send notifications'],
+      automationTasksAr: ['إنشاء بطاقات تلقائياً', 'نقل المهام', 'إرسال إشعارات'],
       benefits: [
-        'Auto-create task cards',
-        'Smart task assignment',
-        'Progress tracking',
-        'Deadline reminders'
+        'Automated project tracking',
+        'Smart task management',
+        'Workflow automation',
+        'Team collaboration enhancement'
       ],
       benefitsAr: [
-        'إنشاء بطاقات المهام تلقائياً',
-        'تعيين ذكي للمهام',
-        'تتبع التقدم',
-        'تذكيرات المواعيد النهائية'
+        'تتبع المشاريع تلقائياً',
+        'إدارة المهام بذكاء',
+        'أتمتة سير العمل',
+        'تحسين تعاون الفريق'
       ],
-      tools: ['Trello API', 'Card Creator', 'Task Automator', 'Assignment System'],
-      toolsAr: ['Trello API', 'منشئ البطاقات', 'مؤتمت المهام', 'نظام التعيين'],
+      tools: ['Trello API', 'Board Manager', 'Automation Engine'],
+      toolsAr: ['واجهة تريلو', 'مدير اللوحات', 'محرك الأتمتة'],
       howItWorks: [
-        'Connect Trello board',
+        'Connect Trello account',
         'Set automation rules',
-        'Agent creates and moves cards',
-        'Assigns tasks to team members'
+        'Boards update automatically'
       ],
       howItWorksAr: [
-        'اربط لوحة تريلو',
+        'اربط حساب تريلو',
         'حدد قواعد الأتمتة',
-        'الوكيل ينشئ وينقل البطاقات',
-        'يعين المهام لأعضاء الفريق'
+        'اللوحات تتحدث تلقائياً'
       ]
     },
     {
       id: 'dropbox',
       name: 'Dropbox',
       nameAr: 'دروب بوكس',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/dropbox-1.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg',
       color: '#0061FF',
       category: 'productivity',
       isConnected: false,
-      description: 'Cloud storage',
-      descriptionAr: 'التخزين السحابي',
+      description: 'Cloud storage automation',
+      descriptionAr: 'أتمتة التخزين السحابي',
       status: 'coming-soon',
-      automationTasks: ['Auto-sync files', 'Share folders', 'Backup data'],
-      automationTasksAr: ['مزامنة الملفات تلقائياً', 'مشاركة المجلدات', 'نسخ احتياطي'],
+      automationTasks: ['Auto-sync files', 'Backup automation', 'Share management'],
+      automationTasksAr: ['مزامنة الملفات تلقائياً', 'أتمتة النسخ الاحتياطي', 'إدارة المشاركة'],
       benefits: [
-        'Automatic file synchronization',
-        'Smart folder sharing',
-        'Scheduled backups',
-        'Version control'
+        'Automated file synchronization',
+        'Smart backup management',
+        'Secure sharing automation',
+        'Storage optimization'
       ],
       benefitsAr: [
-        'مزامنة تلقائية للملفات',
-        'مشاركة ذكية للمجلدات',
-        'نسخ احتياطي مجدول',
-        'التحكم في الإصدارات'
+        'مزامنة الملفات تلقائياً',
+        'إدارة النسخ الاحتياطي بذكاء',
+        'أتمتة المشاركة الآمنة',
+        'تحسين التخزين'
       ],
-      tools: ['Dropbox API', 'Sync Engine', 'Backup Scheduler', 'Share Manager'],
-      toolsAr: ['Dropbox API', 'محرك المزامنة', 'جدولة النسخ الاحتياطي', 'مدير المشاركة'],
+      tools: ['Dropbox API', 'Sync Manager', 'Backup Engine'],
+      toolsAr: ['واجهة دروب بوكس', 'مدير المزامنة', 'محرك النسخ'],
       howItWorks: [
         'Connect Dropbox account',
         'Set sync preferences',
-        'Agent syncs files automatically',
-        'Schedule backups and sharing'
+        'Files sync automatically'
       ],
       howItWorksAr: [
         'اربط حساب دروب بوكس',
         'حدد تفضيلات المزامنة',
-        'الوكيل يزامن الملفات تلقائياً',
-        'جدولة النسخ الاحتياطي والمشاركة'
+        'الملفات تتزامن تلقائياً'
       ]
     },
     {
       id: 'asana',
       name: 'Asana',
       nameAr: 'أسانا',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/asana-logo.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Asana_logo.svg',
       color: '#F06A6A',
       category: 'productivity',
       isConnected: false,
-      description: 'Task management',
-      descriptionAr: 'إدارة المهام',
+      description: 'Task management automation',
+      descriptionAr: 'أتمتة إدارة المهام',
       status: 'coming-soon',
-      automationTasks: ['Create tasks', 'Update status', 'Assign projects'],
-      automationTasksAr: ['إنشاء المهام', 'تحديث الحالة', 'تعيين المشاريع'],
+      automationTasks: ['Auto-assign tasks', 'Update progress', 'Send reminders'],
+      automationTasksAr: ['تعيين المهام تلقائياً', 'تحديث التقدم', 'إرسال تذكيرات'],
       benefits: [
-        'Auto-create project tasks',
-        'Status updates',
-        'Team assignment',
-        'Progress tracking'
+        'Automated task assignment',
+        'Smart progress tracking',
+        'Deadline reminders',
+        'Team workflow optimization'
       ],
       benefitsAr: [
-        'إنشاء مهام المشروع تلقائياً',
-        'تحديثات الحالة',
-        'تعيين الفريق',
-        'تتبع التقدم'
+        'تعيين المهام تلقائياً',
+        'تتبع التقدم بذكاء',
+        'تذكيرات بالمواعيد النهائية',
+        'تحسين سير عمل الفريق'
       ],
-      tools: ['Asana API', 'Task Creator', 'Status Tracker', 'Assignment Engine'],
-      toolsAr: ['Asana API', 'منشئ المهام', 'متتبع الحالة', 'محرك التعيين'],
+      tools: ['Asana API', 'Task Automator', 'Progress Tracker'],
+      toolsAr: ['واجهة أسانا', 'أتمتة المهام', 'تتبع التقدم'],
       howItWorks: [
         'Connect Asana workspace',
-        'Define task templates',
-        'Agent creates tasks automatically',
-        'Updates status and assigns team'
+        'Set task automation rules',
+        'Tasks managed automatically'
       ],
       howItWorksAr: [
-        'اربط مساحة عمل أسانا',
-        'حدد قوالب المهام',
-        'الوكيل ينشئ المهام تلقائياً',
-        'يحدث الحالة ويعين الفريق'
+        'اربط مساحة أسانا',
+        'حدد قواعد أتمتة المهام',
+        'المهام تُدار تلقائياً'
       ]
     },
     {
       id: 'slack',
       name: 'Slack',
       nameAr: 'سلاك',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg',
       color: '#4A154B',
       category: 'communication',
       isConnected: false,
-      description: 'Team communication',
-      descriptionAr: 'التواصل الجماعي',
+      description: 'Team communication automation',
+      descriptionAr: 'أتمتة تواصل الفريق',
       status: 'available',
-      automationTasks: ['Send notifications', 'Create channels', 'Post updates'],
-      automationTasksAr: ['إرسال الإشعارات', 'إنشاء القنوات', 'نشر التحديثات'],
+      automationTasks: ['Auto-post updates', 'Alert notifications', 'Channel management'],
+      automationTasksAr: ['نشر تحديثات تلقائياً', 'تنبيهات', 'إدارة القنوات'],
       benefits: [
-        'Auto-send team notifications',
-        'Channel management',
-        'Scheduled announcements',
-        'Bot integration'
+        'Automated team notifications',
+        'Smart channel organization',
+        'Workflow updates automation',
+        'Integration with other tools'
       ],
       benefitsAr: [
-        'إرسال إشعارات الفريق تلقائياً',
-        'إدارة القنوات',
-        'إعلانات مجدولة',
-        'تكامل البوت'
+        'تنبيهات فريق تلقائية',
+        'تنظيم القنوات بذكاء',
+        'أتمتة تحديثات العمل',
+        'تكامل مع أدوات أخرى'
       ],
-      tools: ['Slack API', 'Bot Framework', 'Notification System', 'Channel Manager'],
-      toolsAr: ['Slack API', 'إطار البوت', 'نظام الإشعارات', 'مدير القنوات'],
+      tools: ['Slack API', 'Notification Bot', 'Channel Manager'],
+      toolsAr: ['واجهة سلاك', 'بوت التنبيهات', 'مدير القنوات'],
       howItWorks: [
         'Connect Slack workspace',
-        'Set up notification rules',
-        'Agent sends messages automatically',
-        'Manages channels and updates'
+        'Choose notification rules',
+        'Messages posted automatically'
       ],
       howItWorksAr: [
-        'اربط مساحة عمل سلاك',
-        'حدد قواعد الإشعارات',
-        'الوكيل يرسل الرسائل تلقائياً',
-        'يدير القنوات والتحديثات'
+        'اربط مساحة سلاك',
+        'اختر قواعد التنبيهات',
+        'الرسائل تُنشر تلقائياً'
       ]
     },
     {
@@ -475,995 +457,1055 @@ const AccountConnectionsSection = () => {
       name: 'Telegram',
       nameAr: 'تيليجرام',
       logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg',
-      color: '#229ED9',
+      color: '#0088CC',
       category: 'communication',
       isConnected: false,
-      description: 'Messaging and channels',
-      descriptionAr: 'الرسائل والقنوات',
-      status: 'available',
-      automationTasks: ['Send messages', 'Manage channels', 'Auto-respond'],
-      automationTasksAr: ['إرسال الرسائل', 'إدارة القنوات', 'الرد التلقائي'],
+      description: 'Messaging automation',
+      descriptionAr: 'أتمتة الرسائل',
+      status: 'coming-soon',
+      automationTasks: ['Auto-respond', 'Broadcast messages', 'Bot management'],
+      automationTasksAr: ['رد تلقائي', 'رسائل جماعية', 'إدارة البوت'],
       benefits: [
-        'Auto-reply to messages',
-        'Channel broadcasting',
-        'Scheduled posts',
-        'Bot commands'
+        'Automated messaging workflows',
+        'Bot-powered customer support',
+        'Bulk message automation',
+        'Channel management'
       ],
       benefitsAr: [
-        'الرد التلقائي على الرسائل',
-        'البث عبر القنوات',
-        'منشورات مجدولة',
-        'أوامر البوت'
+        'أتمتة سير عمل الرسائل',
+        'دعم العملاء عبر البوت',
+        'أتمتة الرسائل الجماعية',
+        'إدارة القنوات'
       ],
-      tools: ['Telegram Bot API', 'Auto-responder', 'Broadcast System', 'Command Handler'],
-      toolsAr: ['Telegram Bot API', 'الرد التلقائي', 'نظام البث', 'معالج الأوامر'],
+      tools: ['Telegram Bot API', 'Message Automator', 'Channel Manager'],
+      toolsAr: ['واجهة بوت تيليجرام', 'أتمتة الرسائل', 'مدير القنوات'],
       howItWorks: [
-        'Create Telegram bot',
-        'Connect to your channel',
-        'Agent responds automatically',
-        'Schedule broadcasts and posts'
+        'Connect Telegram bot',
+        'Configure automation flows',
+        'Messages handled automatically'
       ],
       howItWorksAr: [
-        'أنشئ بوت تيليجرام',
-        'اربطه بقناتك',
-        'الوكيل يرد تلقائياً',
-        'جدولة البث والمنشورات'
+        'اربط بوت تيليجرام',
+        'اضبط تدفقات الأتمتة',
+        'الرسائل تُدار تلقائياً'
       ]
     },
     {
       id: 'discord',
       name: 'Discord',
       nameAr: 'ديسكورد',
-      logoUrl: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/98/Discord_logo.svg',
       color: '#5865F2',
       category: 'communication',
       isConnected: false,
-      description: 'Community management',
-      descriptionAr: 'إدارة المجتمعات',
+      description: 'Community automation',
+      descriptionAr: 'أتمتة المجتمع',
       status: 'coming-soon',
-      automationTasks: ['Moderate channels', 'Send announcements', 'Manage roles'],
-      automationTasksAr: ['إدارة القنوات', 'إرسال الإعلانات', 'إدارة الأدوار'],
+      automationTasks: ['Auto-moderation', 'Welcome messages', 'Role management'],
+      automationTasksAr: ['إشراف تلقائي', 'رسائل ترحيب', 'إدارة الأدوار'],
       benefits: [
-        'Auto-moderation',
-        'Role management',
-        'Scheduled announcements',
-        'Welcome messages'
+        'Automated community management',
+        'Smart moderation tools',
+        'Member onboarding automation',
+        'Role assignment workflows'
       ],
       benefitsAr: [
-        'إشراف تلقائي',
-        'إدارة الأدوار',
-        'إعلانات مجدولة',
-        'رسائل ترحيب'
+        'إدارة المجتمع تلقائياً',
+        'أدوات إشراف ذكية',
+        'أتمتة ترحيب الأعضاء',
+        'تدفقات تعيين الأدوار'
       ],
-      tools: ['Discord Bot API', 'Moderation Tools', 'Role Manager', 'Announcement System'],
-      toolsAr: ['Discord Bot API', 'أدوات الإشراف', 'مدير الأدوار', 'نظام الإعلانات'],
+      tools: ['Discord API', 'Moderation Bot', 'Role Manager'],
+      toolsAr: ['واجهة ديسكورد', 'بوت الإشراف', 'مدير الأدوار'],
       howItWorks: [
-        'Create Discord bot',
-        'Add to your server',
+        'Connect Discord server',
         'Set moderation rules',
-        'Agent manages community automatically'
+        'Community managed automatically'
       ],
       howItWorksAr: [
-        'أنشئ بوت ديسكورد',
-        'أضفه لخادمك',
+        'اربط سيرفر ديسكورد',
         'حدد قواعد الإشراف',
-        'الوكيل يدير المجتمع تلقائياً'
+        'المجتمع يُدار تلقائياً'
       ]
     },
     {
       id: 'zoom',
       name: 'Zoom',
       nameAr: 'زووم',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/zoom-app.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Zoom_Logo_2022.svg',
       color: '#2D8CFF',
       category: 'communication',
       isConnected: false,
-      description: 'Video conferencing',
-      descriptionAr: 'الاجتماعات المرئية',
+      description: 'Video meeting automation',
+      descriptionAr: 'أتمتة الاجتماعات المرئية',
       status: 'coming-soon',
-      automationTasks: ['Schedule meetings', 'Send invites', 'Record sessions'],
-      automationTasksAr: ['جدولة الاجتماعات', 'إرسال الدعوات', 'تسجيل الجلسات'],
+      automationTasks: ['Auto-schedule meetings', 'Send invitations', 'Record management'],
+      automationTasksAr: ['جدولة الاجتماعات تلقائياً', 'إرسال دعوات', 'إدارة التسجيلات'],
       benefits: [
-        'Auto-schedule meetings',
-        'Send invites automatically',
-        'Record and transcribe',
-        'Meeting reminders'
+        'Automated meeting scheduling',
+        'Smart invitation management',
+        'Recording automation',
+        'Meeting analytics'
       ],
       benefitsAr: [
-        'جدولة الاجتماعات تلقائياً',
-        'إرسال الدعوات تلقائياً',
-        'تسجيل وتفريغ نصي',
-        'تذكيرات الاجتماعات'
+        'جدولة اجتماعات تلقائية',
+        'إدارة الدعوات بذكاء',
+        'أتمتة التسجيلات',
+        'تحليلات الاجتماعات'
       ],
-      tools: ['Zoom API', 'Meeting Scheduler', 'Recording System', 'Invite Manager'],
-      toolsAr: ['Zoom API', 'جدولة الاجتماعات', 'نظام التسجيل', 'مدير الدعوات'],
+      tools: ['Zoom API', 'Meeting Scheduler', 'Recording Manager'],
+      toolsAr: ['واجهة زووم', 'جدولة الاجتماعات', 'مدير التسجيلات'],
       howItWorks: [
         'Connect Zoom account',
         'Set meeting preferences',
-        'Agent schedules automatically',
-        'Sends invites and reminders'
+        'Meetings managed automatically'
       ],
       howItWorksAr: [
         'اربط حساب زووم',
         'حدد تفضيلات الاجتماعات',
-        'الوكيل يجدول تلقائياً',
-        'يرسل الدعوات والتذكيرات'
+        'الاجتماعات تُدار تلقائياً'
       ]
     },
     {
       id: 'twitter',
       name: 'Twitter/X',
-      nameAr: 'تويتر',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023_%28white%29.png',
+      nameAr: 'تويتر/إكس',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5a/X_icon_2.svg',
       color: '#000000',
       category: 'marketing',
       isConnected: false,
-      description: 'Social media posting and engagement',
-      descriptionAr: 'النشر والتفاعل على وسائل التواصل',
-      status: 'available',
-      automationTasks: ['Schedule tweets', 'Auto-reply', 'Track mentions'],
-      automationTasksAr: ['جدولة التغريدات', 'الرد التلقائي', 'تتبع الإشارات'],
+      description: 'Social media automation',
+      descriptionAr: 'أتمتة التواصل الاجتماعي',
+      status: 'coming-soon',
+      automationTasks: ['Auto-post content', 'Engagement tracking', 'DM automation'],
+      automationTasksAr: ['نشر محتوى تلقائياً', 'تتبع التفاعل', 'أتمتة الرسائل'],
       benefits: [
-        'Schedule tweets in advance',
-        'Auto-reply to mentions',
-        'Track brand mentions',
-        'Engagement analytics'
+        'Automated content scheduling',
+        'Engagement monitoring',
+        'Smart posting times',
+        'Audience growth automation'
       ],
       benefitsAr: [
-        'جدولة التغريدات مسبقاً',
-        'الرد التلقائي على الإشارات',
-        'تتبع إشارات العلامة التجارية',
-        'تحليلات التفاعل'
+        'جدولة المحتوى تلقائياً',
+        'مراقبة التفاعل',
+        'أوقات نشر ذكية',
+        'أتمتة نمو الجمهور'
       ],
-      tools: ['Twitter API', 'Tweet Scheduler', 'Auto-responder', 'Mention Tracker'],
-      toolsAr: ['Twitter API', 'جدولة التغريدات', 'الرد التلقائي', 'متتبع الإشارات'],
+      tools: ['Twitter API', 'Content Scheduler', 'Analytics Engine'],
+      toolsAr: ['واجهة تويتر', 'جدولة المحتوى', 'محرك التحليلات'],
       howItWorks: [
-        'Connect Twitter account',
-        'Schedule your tweets',
-        'Agent posts automatically',
-        'Responds to mentions and DMs'
+        'Connect Twitter/X account',
+        'Schedule posts and content',
+        'Monitor performance automatically'
       ],
       howItWorksAr: [
-        'اربط حساب تويتر',
-        'جدول تغريداتك',
-        'الوكيل ينشر تلقائياً',
-        'يرد على الإشارات والرسائل'
+        'اربط حساب تويتر/إكس',
+        'جدول المنشورات والمحتوى',
+        'راقب الأداء تلقائياً'
       ]
     },
     {
       id: 'linkedin',
       name: 'LinkedIn',
       nameAr: 'لينكد إن',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/linkedin-icon-2.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png',
       color: '#0A66C2',
       category: 'marketing',
       isConnected: false,
-      description: 'Professional networking',
-      descriptionAr: 'التواصل المهني',
-      status: 'available',
-      automationTasks: ['Post content', 'Connect with leads', 'Share articles'],
-      automationTasksAr: ['نشر المحتوى', 'التواصل مع العملاء', 'مشاركة المقالات'],
+      description: 'Professional networking automation',
+      descriptionAr: 'أتمتة التواصل المهني',
+      status: 'coming-soon',
+      automationTasks: ['Auto-connect requests', 'Post scheduling', 'Lead generation'],
+      automationTasksAr: ['طلبات اتصال تلقائية', 'جدولة المنشورات', 'توليد العملاء'],
       benefits: [
-        'Auto-post professional content',
-        'Connect with leads',
-        'Share industry articles',
-        'Network growth'
+        'Automated professional outreach',
+        'Content scheduling',
+        'Lead generation workflows',
+        'Network growth automation'
       ],
       benefitsAr: [
-        'نشر محتوى مهني تلقائياً',
-        'التواصل مع العملاء المحتملين',
-        'مشاركة مقالات الصناعة',
-        'نمو الشبكة'
+        'تواصل مهني تلقائي',
+        'جدولة المحتوى',
+        'تدفقات توليد العملاء',
+        'أتمتة نمو الشبكة'
       ],
-      tools: ['LinkedIn API', 'Content Scheduler', 'Connection Manager', 'Article Sharer'],
-      toolsAr: ['LinkedIn API', 'جدولة المحتوى', 'مدير الاتصالات', 'مشارك المقالات'],
+      tools: ['LinkedIn API', 'Outreach Bot', 'Lead Tracker'],
+      toolsAr: ['واجهة لينكد إن', 'بوت التواصل', 'تتبع العملاء'],
       howItWorks: [
-        'Connect LinkedIn profile',
-        'Schedule professional posts',
-        'Agent shares content automatically',
-        'Connects with relevant leads'
+        'Connect LinkedIn account',
+        'Set outreach campaigns',
+        'Network grows automatically'
       ],
       howItWorksAr: [
-        'اربط ملف لينكد إن',
-        'جدول المنشورات المهنية',
-        'الوكيل يشارك المحتوى تلقائياً',
-        'يتواصل مع العملاء المحتملين'
+        'اربط حساب لينكد إن',
+        'حدد حملات التواصل',
+        'الشبكة تنمو تلقائياً'
       ]
     },
     {
       id: 'youtube',
       name: 'YouTube',
       nameAr: 'يوتيوب',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/youtube-icon.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg',
       color: '#FF0000',
       category: 'marketing',
       isConnected: false,
-      description: 'Video content management',
-      descriptionAr: 'إدارة محتوى الفيديو',
-      status: 'available',
-      automationTasks: ['Upload videos', 'Schedule posts', 'Manage comments'],
-      automationTasksAr: ['رفع الفيديوهات', 'جدولة النشر', 'إدارة التعليقات'],
+      description: 'Video content automation',
+      descriptionAr: 'أتمتة محتوى الفيديو',
+      status: 'coming-soon',
+      automationTasks: ['Auto-upload videos', 'Manage comments', 'Analytics reports'],
+      automationTasksAr: ['رفع فيديوهات تلقائياً', 'إدارة التعليقات', 'تقارير التحليلات'],
       benefits: [
-        'Auto-upload videos',
-        'Schedule video releases',
-        'Moderate comments',
-        'Analytics tracking'
+        'Automated video publishing',
+        'Comment moderation',
+        'Analytics automation',
+        'Content scheduling'
       ],
       benefitsAr: [
-        'رفع الفيديوهات تلقائياً',
-        'جدولة إصدار الفيديوهات',
-        'إدارة التعليقات',
-        'تتبع التحليلات'
+        'نشر الفيديوهات تلقائياً',
+        'إشراف على التعليقات',
+        'أتمتة التحليلات',
+        'جدولة المحتوى'
       ],
-      tools: ['YouTube API', 'Video Uploader', 'Comment Moderator', 'Analytics Dashboard'],
-      toolsAr: ['YouTube API', 'رافع الفيديو', 'مشرف التعليقات', 'لوحة التحليلات'],
+      tools: ['YouTube API', 'Upload Manager', 'Analytics Engine'],
+      toolsAr: ['واجهة يوتيوب', 'مدير الرفع', 'محرك التحليلات'],
       howItWorks: [
         'Connect YouTube channel',
-        'Upload and schedule videos',
-        'Agent publishes automatically',
-        'Moderates comments and tracks analytics'
+        'Schedule uploads',
+        'Manage content automatically'
       ],
       howItWorksAr: [
         'اربط قناة يوتيوب',
-        'ارفع وجدول الفيديوهات',
-        'الوكيل ينشر تلقائياً',
-        'يدير التعليقات ويتتبع التحليلات'
+        'جدول الرفع',
+        'إدارة المحتوى تلقائياً'
       ]
     },
     {
       id: 'instagram',
       name: 'Instagram',
-      nameAr: 'إنستغرام',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/instagram-2016-5.svg',
+      nameAr: 'إنستجرام',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png',
       color: '#E4405F',
       category: 'marketing',
       isConnected: false,
-      description: 'Visual content sharing',
-      descriptionAr: 'مشاركة المحتوى المرئي',
+      description: 'Instagram marketing automation',
+      descriptionAr: 'أتمتة تسويق إنستجرام',
       status: 'coming-soon',
-      automationTasks: ['Schedule posts', 'Auto-reply DMs', 'Track hashtags'],
-      automationTasksAr: ['جدولة المنشورات', 'الرد على الرسائل', 'تتبع الهاشتاقات'],
+      automationTasks: ['Auto-post stories', 'Engagement tracking', 'DM responses'],
+      automationTasksAr: ['نشر قصص تلقائياً', 'تتبع التفاعل', 'ردود الرسائل'],
       benefits: [
-        'Schedule posts and stories',
-        'Auto-reply to DMs',
-        'Hashtag tracking',
-        'Engagement analytics'
+        'Automated content posting',
+        'Engagement optimization',
+        'Smart hashtag management',
+        'Audience growth'
       ],
       benefitsAr: [
-        'جدولة المنشورات والقصص',
-        'الرد التلقائي على الرسائل',
-        'تتبع الهاشتاقات',
-        'تحليلات التفاعل'
+        'نشر المحتوى تلقائياً',
+        'تحسين التفاعل',
+        'إدارة الهاشتاقات',
+        'نمو الجمهور'
       ],
-      tools: ['Instagram API', 'Post Scheduler', 'DM Auto-responder', 'Hashtag Tracker'],
-      toolsAr: ['Instagram API', 'جدولة المنشورات', 'الرد التلقائي', 'متتبع الهاشتاقات'],
+      tools: ['Instagram API', 'Content Scheduler', 'Engagement Tracker'],
+      toolsAr: ['واجهة إنستجرام', 'جدولة المحتوى', 'تتبع التفاعل'],
       howItWorks: [
-        'Connect Instagram account',
+        'Connect Instagram Business',
         'Schedule posts and stories',
-        'Agent publishes automatically',
-        'Responds to DMs and tracks hashtags'
+        'Optimize engagement automatically'
       ],
       howItWorksAr: [
-        'اربط حساب إنستغرام',
+        'اربط إنستجرام بيزنس',
         'جدول المنشورات والقصص',
-        'الوكيل ينشر تلقائياً',
-        'يرد على الرسائل ويتتبع الهاشتاقات'
+        'تحسين التفاعل تلقائياً'
       ]
     },
     {
       id: 'facebook',
       name: 'Facebook',
       nameAr: 'فيسبوك',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/facebook-3.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg',
       color: '#1877F2',
       category: 'marketing',
       isConnected: false,
-      description: 'Social media marketing',
-      descriptionAr: 'التسويق عبر وسائل التواصل',
+      description: 'Facebook page automation',
+      descriptionAr: 'أتمتة صفحة فيسبوك',
       status: 'coming-soon',
-      automationTasks: ['Post updates', 'Manage pages', 'Run ads'],
-      automationTasksAr: ['نشر التحديثات', 'إدارة الصفحات', 'إدارة الإعلانات'],
+      automationTasks: ['Auto-post updates', 'Manage comments', 'Send messages'],
+      automationTasksAr: ['نشر تحديثات تلقائياً', 'إدارة التعليقات', 'إرسال رسائل'],
       benefits: [
-        'Auto-post updates',
-        'Page management',
-        'Ad campaign automation',
-        'Audience insights'
+        'Automated page management',
+        'Content scheduling',
+        'Engagement monitoring',
+        'Customer communication'
       ],
       benefitsAr: [
-        'نشر التحديثات تلقائياً',
-        'إدارة الصفحات',
-        'أتمتة الحملات الإعلانية',
-        'رؤى الجمهور'
+        'إدارة الصفحة تلقائياً',
+        'جدولة المحتوى',
+        'مراقبة التفاعل',
+        'تواصل مع العملاء'
       ],
-      tools: ['Facebook API', 'Post Scheduler', 'Page Manager', 'Ad Automator'],
-      toolsAr: ['Facebook API', 'جدولة المنشورات', 'مدير الصفحات', 'مؤتمت الإعلانات'],
+      tools: ['Facebook API', 'Page Manager', 'Engagement Tools'],
+      toolsAr: ['واجهة فيسبوك', 'مدير الصفحة', 'أدوات التفاعل'],
       howItWorks: [
         'Connect Facebook page',
-        'Schedule posts and ads',
-        'Agent manages automatically',
-        'Tracks engagement and insights'
+        'Schedule content',
+        'Manage page automatically'
       ],
       howItWorksAr: [
         'اربط صفحة فيسبوك',
-        'جدول المنشورات والإعلانات',
-        'الوكيل يدير تلقائياً',
-        'يتتبع التفاعل والرؤى'
+        'جدول المحتوى',
+        'إدارة الصفحة تلقائياً'
       ]
     },
     {
       id: 'mailchimp',
       name: 'Mailchimp',
       nameAr: 'ميل تشيمب',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/mailchimp.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Mailchimp_Logo.svg/1200px-Mailchimp_Logo.svg.png',
       color: '#FFE01B',
       category: 'marketing',
       isConnected: false,
-      description: 'Email marketing',
-      descriptionAr: 'التسويق عبر البريد الإلكتروني',
+      description: 'Email marketing automation',
+      descriptionAr: 'أتمتة التسويق بالإيميل',
       status: 'coming-soon',
-      automationTasks: ['Send campaigns', 'Manage lists', 'Track analytics'],
-      automationTasksAr: ['إرسال الحملات', 'إدارة القوائم', 'تتبع التحليلات'],
+      automationTasks: ['Auto-campaigns', 'List management', 'Analytics reports'],
+      automationTasksAr: ['حملات تلقائية', 'إدارة القوائم', 'تقارير التحليلات'],
       benefits: [
         'Automated email campaigns',
-        'List segmentation',
-        'A/B testing',
-        'Performance analytics'
+        'Smart audience segmentation',
+        'Performance analytics',
+        'Lead nurturing automation'
       ],
       benefitsAr: [
-        'حملات بريد إلكتروني تلقائية',
-        'تقسيم القوائم',
-        'اختبار A/B',
-        'تحليلات الأداء'
+        'حملات إيميل تلقائية',
+        'تقسيم الجمهور بذكاء',
+        'تحليلات الأداء',
+        'أتمتة رعاية العملاء'
       ],
-      tools: ['Mailchimp API', 'Campaign Builder', 'List Manager', 'Analytics Dashboard'],
-      toolsAr: ['Mailchimp API', 'منشئ الحملات', 'مدير القوائم', 'لوحة التحليلات'],
+      tools: ['Mailchimp API', 'Campaign Manager', 'Analytics Dashboard'],
+      toolsAr: ['واجهة ميل تشيمب', 'مدير الحملات', 'لوحة التحليلات'],
       howItWorks: [
         'Connect Mailchimp account',
-        'Create email campaigns',
-        'Agent sends automatically',
-        'Tracks opens and clicks'
+        'Create automated campaigns',
+        'Monitor results automatically'
       ],
       howItWorksAr: [
         'اربط حساب ميل تشيمب',
-        'أنشئ حملات البريد',
-        'الوكيل يرسل تلقائياً',
-        'يتتبع الفتح والنقرات'
+        'أنشئ حملات تلقائية',
+        'راقب النتائج تلقائياً'
       ]
     },
     {
       id: 'github',
       name: 'GitHub',
-      nameAr: 'جيت هاب',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/github-icon-2.svg',
-      color: '#181717',
+      nameAr: 'جيت هب',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg',
+      color: '#24292e',
       category: 'technical',
       isConnected: false,
-      description: 'Code repository management',
-      descriptionAr: 'إدارة مستودعات الأكواد',
-      status: 'available',
-      automationTasks: ['Create repos', 'Manage issues', 'Deploy code'],
-      automationTasksAr: ['إنشاء المستودعات', 'إدارة المشاكل', 'نشر الأكواد'],
+      description: 'Development workflow automation',
+      descriptionAr: 'أتمتة سير العمل التطويري',
+      status: 'coming-soon',
+      automationTasks: ['Auto-create issues', 'PR notifications', 'Code review automation'],
+      automationTasksAr: ['إنشاء مشاكل تلقائياً', 'تنبيهات Pull Request', 'أتمتة مراجعة الكود'],
       benefits: [
-        'Auto-create repositories',
-        'Issue management',
-        'Automated deployments',
-        'Code review automation'
+        'Automated issue management',
+        'Smart PR workflows',
+        'Code quality automation',
+        'Development analytics'
       ],
       benefitsAr: [
-        'إنشاء المستودعات تلقائياً',
-        'إدارة المشاكل',
-        'نشر تلقائي',
-        'أتمتة مراجعة الأكواد'
+        'إدارة المشاكل تلقائياً',
+        'تدفقات PR ذكية',
+        'أتمتة جودة الكود',
+        'تحليلات التطوير'
       ],
-      tools: ['GitHub API', 'Repo Manager', 'Issue Tracker', 'CI/CD Pipeline'],
-      toolsAr: ['GitHub API', 'مدير المستودعات', 'متتبع المشاكل', 'خط CI/CD'],
+      tools: ['GitHub API', 'Workflow Automator', 'PR Manager'],
+      toolsAr: ['واجهة جيت هب', 'أتمتة التدفقات', 'مدير PR'],
       howItWorks: [
-        'Connect GitHub account',
-        'Set up automation rules',
-        'Agent manages repos automatically',
-        'Handles issues and deployments'
+        'Connect GitHub repository',
+        'Set automation rules',
+        'Workflows run automatically'
       ],
       howItWorksAr: [
-        'اربط حساب جيت هاب',
+        'اربط مستودع جيت هب',
         'حدد قواعد الأتمتة',
-        'الوكيل يدير المستودعات تلقائياً',
-        'يتعامل مع المشاكل والنشر'
+        'التدفقات تعمل تلقائياً'
       ]
     },
     {
       id: 'zapier',
       name: 'Zapier',
-      nameAr: 'زابير',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/zapier-1.svg',
+      nameAr: 'زابيير',
+      logoUrl: 'https://zapier.com/favicon.ico',
       color: '#FF4A00',
       category: 'technical',
       isConnected: false,
-      description: 'Workflow automation',
-      descriptionAr: 'أتمتة سير العمل',
-      status: 'available',
-      automationTasks: ['Create workflows', 'Connect apps', 'Automate tasks'],
-      automationTasksAr: ['إنشاء سير العمل', 'ربط التطبيقات', 'أتمتة المهام'],
+      description: 'Automation platform integration',
+      descriptionAr: 'منصة الأتمتة',
+      status: 'coming-soon',
+      automationTasks: ['Connect apps', 'Build zaps', 'Workflow automation'],
+      automationTasksAr: ['ربط التطبيقات', 'بناء زابس', 'أتمتة التدفقات'],
       benefits: [
         'Connect 5000+ apps',
-        'Multi-step workflows',
         'No-code automation',
-        'Trigger-based actions'
+        'Custom workflows',
+        'Easy integration setup'
       ],
       benefitsAr: [
         'ربط أكثر من 5000 تطبيق',
-        'سير عمل متعدد الخطوات',
         'أتمتة بدون كود',
-        'إجراءات مبنية على المحفزات'
+        'تدفقات مخصصة',
+        'إعداد سهل للتكاملات'
       ],
-      tools: ['Zapier API', 'Workflow Builder', 'App Connector', 'Trigger System'],
-      toolsAr: ['Zapier API', 'منشئ سير العمل', 'موصل التطبيقات', 'نظام المحفزات'],
+      tools: ['Zapier API', 'Workflow Builder', 'App Connector'],
+      toolsAr: ['واجهة زابيير', 'بناء التدفقات', 'ربط التطبيقات'],
       howItWorks: [
         'Connect Zapier account',
-        'Create automation workflows',
-        'Agent executes automatically',
-        'Connects multiple apps seamlessly'
+        'Choose apps to integrate',
+        'Build automation workflows'
       ],
       howItWorksAr: [
-        'اربط حساب زابير',
-        'أنشئ سير عمل الأتمتة',
-        'الوكيل ينفذ تلقائياً',
-        'يربط عدة تطبيقات بسلاسة'
+        'اربط حساب زابيير',
+        'اختر التطبيقات للربط',
+        'ابن تدفقات الأتمتة'
       ]
     },
     {
       id: 'make',
-      name: 'Make',
+      name: 'Make.com',
       nameAr: 'ميك',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/make-seeklogo.svg',
-      color: '#6D00CC',
+      logoUrl: 'https://www.make.com/favicon.ico',
+      color: '#8B5CF6',
       category: 'technical',
       isConnected: false,
-      description: 'Advanced automation',
-      descriptionAr: 'أتمتة متقدمة',
+      description: 'Visual automation builder',
+      descriptionAr: 'بناء الأتمتة المرئية',
       status: 'coming-soon',
-      automationTasks: ['Build scenarios', 'Connect services', 'Process data'],
-      automationTasksAr: ['بناء السيناريوهات', 'ربط الخدمات', 'معالجة البيانات'],
+      automationTasks: ['Visual workflows', 'App connections', 'Scenario automation'],
+      automationTasksAr: ['تدفقات مرئية', 'ربط التطبيقات', 'أتمتة السيناريوهات'],
       benefits: [
-        'Visual automation builder',
-        'Complex workflows',
-        'Data transformation',
-        'Error handling'
+        'Visual workflow builder',
+        'Advanced automation scenarios',
+        'Multiple app integrations',
+        'Real-time automation'
       ],
       benefitsAr: [
-        'منشئ أتمتة مرئي',
-        'سير عمل معقد',
-        'تحويل البيانات',
-        'معالجة الأخطاء'
+        'بناء تدفقات مرئية',
+        'سيناريوهات أتمتة متقدمة',
+        'تكاملات متعددة',
+        'أتمتة فورية'
       ],
-      tools: ['Make API', 'Scenario Builder', 'Data Processor', 'Error Handler'],
-      toolsAr: ['Make API', 'منشئ السيناريوهات', 'معالج البيانات', 'معالج الأخطاء'],
+      tools: ['Make API', 'Scenario Builder', 'Automation Engine'],
+      toolsAr: ['واجهة ميك', 'بناء السيناريوهات', 'محرك الأتمتة'],
       howItWorks: [
         'Connect Make account',
         'Build visual scenarios',
-        'Agent executes workflows',
-        'Handles complex automations'
+        'Run automation workflows'
       ],
       howItWorksAr: [
         'اربط حساب ميك',
-        'ابنِ سيناريوهات مرئية',
-        'الوكيل ينفذ سير العمل',
-        'يتعامل مع الأتمتة المعقدة'
+        'ابن سيناريوهات مرئية',
+        'شغل تدفقات الأتمتة'
       ]
     },
     {
       id: 'gitlab',
       name: 'GitLab',
       nameAr: 'جيت لاب',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/gitlab.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/GitLab_logo.svg',
       color: '#FC6D26',
       category: 'technical',
       isConnected: false,
-      description: 'DevOps platform',
-      descriptionAr: 'منصة DevOps',
+      description: 'DevOps automation',
+      descriptionAr: 'أتمتة DevOps',
       status: 'coming-soon',
-      automationTasks: ['Manage pipelines', 'Deploy apps', 'Track issues'],
-      automationTasksAr: ['إدارة خطوط الإنتاج', 'نشر التطبيقات', 'تتبع المشاكل'],
+      automationTasks: ['CI/CD automation', 'Issue management', 'Pipeline notifications'],
+      automationTasksAr: ['أتمتة CI/CD', 'إدارة المشاكل', 'تنبيهات البايبلاين'],
       benefits: [
-        'CI/CD automation',
-        'Pipeline management',
-        'Automated testing',
+        'Automated CI/CD workflows',
+        'DevOps pipeline automation',
+        'Issue tracking',
         'Deployment automation'
       ],
       benefitsAr: [
-        'أتمتة CI/CD',
-        'إدارة خطوط الإنتاج',
-        'اختبار تلقائي',
+        'تدفقات CI/CD تلقائية',
+        'أتمتة بايبلاين',
+        'تتبع المشاكل',
         'أتمتة النشر'
       ],
-      tools: ['GitLab API', 'Pipeline Manager', 'CI/CD System', 'Issue Tracker'],
-      toolsAr: ['GitLab API', 'مدير خطوط الإنتاج', 'نظام CI/CD', 'متتبع المشاكل'],
+      tools: ['GitLab API', 'Pipeline Manager', 'DevOps Automator'],
+      toolsAr: ['واجهة جيت لاب', 'مدير البايبلاين', 'أتمتة DevOps'],
       howItWorks: [
-        'Connect GitLab account',
-        'Set up pipelines',
-        'Agent manages CI/CD automatically',
-        'Deploys and tests code'
+        'Connect GitLab project',
+        'Set CI/CD rules',
+        'Pipelines run automatically'
       ],
       howItWorksAr: [
-        'اربط حساب جيت لاب',
-        'أنشئ خطوط الإنتاج',
-        'الوكيل يدير CI/CD تلقائياً',
-        'ينشر ويختبر الأكواد'
+        'اربط مشروع جيت لاب',
+        'حدد قواعد CI/CD',
+        'البايبلاين تعمل تلقائياً'
       ]
     },
     {
       id: 'jira',
       name: 'Jira',
       nameAr: 'جيرا',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/jira-3.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Jira_Logo.svg',
       color: '#0052CC',
       category: 'technical',
       isConnected: false,
-      description: 'Issue tracking',
-      descriptionAr: 'تتبع المشاكل',
+      description: 'Issue tracking automation',
+      descriptionAr: 'أتمتة تتبع المشاكل',
       status: 'coming-soon',
-      automationTasks: ['Create tickets', 'Update status', 'Assign tasks'],
-      automationTasksAr: ['إنشاء التذاكر', 'تحديث الحالة', 'تعيين المهام'],
+      automationTasks: ['Auto-create tickets', 'Status updates', 'Team notifications'],
+      automationTasksAr: ['إنشاء تذاكر تلقائياً', 'تحديث الحالات', 'تنبيهات الفريق'],
       benefits: [
-        'Auto-create tickets',
-        'Status automation',
-        'Task assignment',
-        'Sprint management'
+        'Automated ticket management',
+        'Smart status tracking',
+        'Team workflow optimization',
+        'Project analytics'
       ],
       benefitsAr: [
-        'إنشاء التذاكر تلقائياً',
-        'أتمتة الحالة',
-        'تعيين المهام',
-        'إدارة السبرنت'
+        'إدارة التذاكر تلقائياً',
+        'تتبع الحالات بذكاء',
+        'تحسين سير عمل الفريق',
+        'تحليلات المشاريع'
       ],
-      tools: ['Jira API', 'Ticket Creator', 'Status Tracker', 'Sprint Manager'],
-      toolsAr: ['Jira API', 'منشئ التذاكر', 'متتبع الحالة', 'مدير السبرنت'],
+      tools: ['Jira API', 'Ticket Automator', 'Workflow Manager'],
+      toolsAr: ['واجهة جيرا', 'أتمتة التذاكر', 'مدير التدفقات'],
       howItWorks: [
-        'Connect Jira workspace',
-        'Set automation rules',
-        'Agent creates tickets automatically',
-        'Updates status and assigns tasks'
+        'Connect Jira project',
+        'Set automation triggers',
+        'Tickets updated automatically'
       ],
       howItWorksAr: [
-        'اربط مساحة عمل جيرا',
-        'حدد قواعد الأتمتة',
-        'الوكيل ينشئ التذاكر تلقائياً',
-        'يحدث الحالة ويعين المهام'
+        'اربط مشروع جيرا',
+        'حدد محفزات الأتمتة',
+        'التذاكر تتحدث تلقائياً'
       ]
     },
     {
       id: 'stripe',
       name: 'Stripe',
       nameAr: 'سترايب',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/stripe-4.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Stripe_logo%2C_revised_2016.svg',
       color: '#635BFF',
       category: 'financial',
       isConnected: false,
-      description: 'Payment processing',
-      descriptionAr: 'معالجة المدفوعات',
-      status: 'available',
-      automationTasks: ['Process payments', 'Send invoices', 'Track revenue'],
-      automationTasksAr: ['معالجة المدفوعات', 'إرسال الفواتير', 'تتبع الإيرادات'],
+      description: 'Payment automation',
+      descriptionAr: 'أتمتة المدفوعات',
+      status: 'coming-soon',
+      automationTasks: ['Auto-invoicing', 'Payment tracking', 'Receipt generation'],
+      automationTasksAr: ['فواتير تلقائية', 'تتبع المدفوعات', 'إنشاء إيصالات'],
       benefits: [
         'Automated payment processing',
-        'Invoice generation',
-        'Revenue tracking',
-        'Subscription management'
+        'Smart invoicing',
+        'Payment analytics',
+        'Customer billing automation'
       ],
       benefitsAr: [
-        'معالجة مدفوعات تلقائية',
-        'إنشاء الفواتير',
-        'تتبع الإيرادات',
-        'إدارة الاشتراكات'
+        'معالجة المدفوعات تلقائياً',
+        'فواتير ذكية',
+        'تحليلات المدفوعات',
+        'أتمتة فواتير العملاء'
       ],
-      tools: ['Stripe API', 'Payment Processor', 'Invoice Generator', 'Revenue Tracker'],
-      toolsAr: ['Stripe API', 'معالج المدفوعات', 'مولد الفواتير', 'متتبع الإيرادات'],
+      tools: ['Stripe API', 'Invoice Generator', 'Payment Tracker'],
+      toolsAr: ['واجهة سترايب', 'مولد الفواتير', 'تتبع المدفوعات'],
       howItWorks: [
         'Connect Stripe account',
-        'Set up payment flows',
-        'Agent processes payments automatically',
-        'Generates invoices and tracks revenue'
+        'Set billing automation',
+        'Payments processed automatically'
       ],
       howItWorksAr: [
         'اربط حساب سترايب',
-        'أنشئ تدفقات الدفع',
-        'الوكيل يعالج المدفوعات تلقائياً',
-        'ينشئ الفواتير ويتتبع الإيرادات'
+        'حدد أتمتة الفوترة',
+        'المدفوعات تُعالج تلقائياً'
       ]
     },
     {
       id: 'paypal',
       name: 'PayPal',
       nameAr: 'باي بال',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/paypal-2.svg',
-      color: '#00457C',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
+      color: '#003087',
       category: 'financial',
       isConnected: false,
-      description: 'Online payments',
-      descriptionAr: 'المدفوعات الإلكترونية',
+      description: 'Payment automation',
+      descriptionAr: 'أتمتة المدفوعات',
       status: 'coming-soon',
-      automationTasks: ['Accept payments', 'Send money', 'Generate reports'],
-      automationTasksAr: ['قبول المدفوعات', 'إرسال الأموال', 'إنشاء التقارير'],
+      automationTasks: ['Auto-invoicing', 'Payment notifications', 'Transaction tracking'],
+      automationTasksAr: ['فواتير تلقائية', 'تنبيهات المدفوعات', 'تتبع المعاملات'],
       benefits: [
-        'Accept online payments',
-        'Automated transfers',
-        'Transaction reports',
-        'Refund management'
+        'Automated PayPal transactions',
+        'Payment notifications',
+        'Transaction management',
+        'Financial reporting'
       ],
       benefitsAr: [
-        'قبول المدفوعات الإلكترونية',
-        'تحويلات تلقائية',
-        'تقارير المعاملات',
-        'إدارة الاسترداد'
+        'معاملات باي بال تلقائية',
+        'تنبيهات المدفوعات',
+        'إدارة المعاملات',
+        'تقارير مالية'
       ],
-      tools: ['PayPal API', 'Payment Gateway', 'Transfer System', 'Report Generator'],
-      toolsAr: ['PayPal API', 'بوابة الدفع', 'نظام التحويل', 'مولد التقارير'],
+      tools: ['PayPal API', 'Transaction Manager', 'Reporting Engine'],
+      toolsAr: ['واجهة باي بال', 'مدير المعاملات', 'محرك التقارير'],
       howItWorks: [
         'Connect PayPal account',
-        'Set up payment options',
-        'Agent processes transactions',
-        'Generates financial reports'
+        'Set payment automation',
+        'Transactions tracked automatically'
       ],
       howItWorksAr: [
         'اربط حساب باي بال',
-        'حدد خيارات الدفع',
-        'الوكيل يعالج المعاملات',
-        'ينشئ التقارير المالية'
+        'حدد أتمتة المدفوعات',
+        'المعاملات تُتبع تلقائياً'
       ]
     },
     {
       id: 'quickbooks',
       name: 'QuickBooks',
       nameAr: 'كويك بوكس',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/quickbooks-2.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/QuickBooks_logo.svg/1200px-QuickBooks_logo.svg.png',
       color: '#2CA01C',
       category: 'financial',
       isConnected: false,
-      description: 'Accounting software',
-      descriptionAr: 'برنامج المحاسبة',
+      description: 'Accounting automation',
+      descriptionAr: 'أتمتة المحاسبة',
       status: 'coming-soon',
-      automationTasks: ['Track expenses', 'Generate invoices', 'Financial reports'],
-      automationTasksAr: ['تتبع المصروفات', 'إنشاء الفواتير', 'التقارير المالية'],
+      automationTasks: ['Auto-bookkeeping', 'Invoice automation', 'Expense tracking'],
+      automationTasksAr: ['مسك دفاتر تلقائي', 'أتمتة الفواتير', 'تتبع المصروفات'],
       benefits: [
-        'Automated bookkeeping',
-        'Expense tracking',
-        'Invoice generation',
-        'Financial reporting'
+        'Automated accounting workflows',
+        'Smart expense categorization',
+        'Invoice automation',
+        'Financial insights'
       ],
       benefitsAr: [
-        'مسك دفاتر تلقائي',
-        'تتبع المصروفات',
-        'إنشاء الفواتير',
-        'التقارير المالية'
+        'تدفقات محاسبة تلقائية',
+        'تصنيف المصروفات بذكاء',
+        'أتمتة الفواتير',
+        'رؤى مالية'
       ],
-      tools: ['QuickBooks API', 'Expense Tracker', 'Invoice Generator', 'Report Builder'],
-      toolsAr: ['QuickBooks API', 'متتبع المصروفات', 'مولد الفواتير', 'منشئ التقارير'],
+      tools: ['QuickBooks API', 'Bookkeeping Bot', 'Finance Analyzer'],
+      toolsAr: ['واجهة كويك بوكس', 'بوت المحاسبة', 'محلل مالي'],
       howItWorks: [
         'Connect QuickBooks account',
-        'Sync financial data',
-        'Agent tracks expenses automatically',
-        'Generates invoices and reports'
+        'Set bookkeeping rules',
+        'Accounting done automatically'
       ],
       howItWorksAr: [
         'اربط حساب كويك بوكس',
-        'زامن البيانات المالية',
-        'الوكيل يتتبع المصروفات تلقائياً',
-        'ينشئ الفواتير والتقارير'
+        'حدد قواعد المحاسبة',
+        'المحاسبة تتم تلقائياً'
       ]
     },
     {
       id: 'xero',
       name: 'Xero',
       nameAr: 'زيرو',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/xero-2.svg',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/04/Xero_logo.svg/1200px-Xero_logo.svg.png',
       color: '#13B5EA',
       category: 'financial',
       isConnected: false,
-      description: 'Cloud accounting',
-      descriptionAr: 'المحاسبة السحابية',
+      description: 'Accounting automation',
+      descriptionAr: 'أتمتة المحاسبة',
       status: 'coming-soon',
-      automationTasks: ['Manage accounts', 'Track invoices', 'Bank reconciliation'],
-      automationTasksAr: ['إدارة الحسابات', 'تتبع الفواتير', 'تسوية البنوك'],
+      automationTasks: ['Auto-reconciliation', 'Invoice management', 'Report generation'],
+      automationTasksAr: ['مطابقة تلقائية', 'إدارة الفواتير', 'إنشاء التقارير'],
       benefits: [
-        'Cloud-based accounting',
-        'Real-time financial data',
-        'Bank reconciliation',
-        'Multi-currency support'
+        'Automated financial reconciliation',
+        'Smart invoice management',
+        'Automated reporting',
+        'Real-time financial insights'
       ],
       benefitsAr: [
-        'محاسبة سحابية',
-        'بيانات مالية فورية',
-        'تسوية بنكية',
-        'دعم عملات متعددة'
+        'مطابقة مالية تلقائية',
+        'إدارة فواتير ذكية',
+        'تقارير تلقائية',
+        'رؤى مالية فورية'
       ],
-      tools: ['Xero API', 'Account Manager', 'Invoice Tracker', 'Bank Reconciler'],
-      toolsAr: ['Xero API', 'مدير الحسابات', 'متتبع الفواتير', 'مسوي البنوك'],
+      tools: ['Xero API', 'Reconciliation Engine', 'Report Generator'],
+      toolsAr: ['واجهة زيرو', 'محرك المطابقة', 'مولد التقارير'],
       howItWorks: [
         'Connect Xero account',
-        'Sync bank accounts',
-        'Agent manages accounting automatically',
-        'Reconciles transactions and generates reports'
+        'Set reconciliation rules',
+        'Finances managed automatically'
       ],
       howItWorksAr: [
         'اربط حساب زيرو',
-        'زامن الحسابات البنكية',
-        'الوكيل يدير المحاسبة تلقائياً',
-        'يسوي المعاملات وينشئ التقارير'
+        'حدد قواعد المطابقة',
+        'الأموال تُدار تلقائياً'
       ]
     },
+    {
+      id: 'all',
+      name: 'All Apps',
+      nameAr: 'جميع التطبيقات',
+      logoUrl: '',
+      color: '#8B5CF6',
+      category: 'productivity',
+      isConnected: false,
+      description: 'View all available integrations',
+      descriptionAr: 'عرض جميع التكاملات المتاحة',
+      status: 'available',
+      automationTasks: ['Browse integrations', 'Connect accounts', 'Start automations'],
+      automationTasksAr: ['تصفح التكاملات', 'ربط الحسابات', 'بدء الأتمتة'],
+      benefits: ['Access all integrations', 'Easy account connection', 'Comprehensive automation'],
+      benefitsAr: ['الوصول لجميع التكاملات', 'ربط الحسابات بسهولة', 'أتمتة شاملة'],
+      tools: ['Integration Hub', 'Account Manager', 'Automation Builder'],
+      toolsAr: ['مركز التكاملات', 'مدير الحسابات', 'بناء الأتمتة'],
+      howItWorks: ['Browse all integrations', 'Select and connect', 'Start automating'],
+      howItWorksAr: ['تصفح جميع التكاملات', 'اختر واربط', 'ابدأ الأتمتة']
+    }
   ]);
+
+  const displayConnections = useMemo(() => {
+    return connections.map((c) => {
+      const dbKey = UI_TO_DB_KEY[c.id];
+      if (!dbKey) return c;
+
+      const enabled = enabledIntegrations[dbKey]?.enabled ?? false;
+      const connected = userStatusByKey[dbKey] === 'connected';
+
+      return {
+        ...c,
+        isConnected: connected,
+        status: enabled ? 'available' : 'coming-soon',
+      };
+    });
+  }, [connections, enabledIntegrations, userStatusByKey]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedApp, setSelectedApp] = useState<AppConnection | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [hoveredApp, setHoveredApp] = useState<string | null>(null);
 
-  const INITIAL_SHOW = 14;
+  const INITIAL_SHOW = 8;
 
   const categories = [
-    { id: 'all', nameEn: 'All Apps', nameAr: 'جميع التطبيقات', icon: 'ri-apps-line' },
-    { id: 'productivity', nameEn: 'Productivity', nameAr: 'الإنتاجية', icon: 'ri-briefcase-line' },
-    { id: 'communication', nameEn: 'Communication', nameAr: 'التواصل', icon: 'ri-chat-3-line' },
-    { id: 'marketing', nameEn: 'Marketing', nameAr: 'التسويق', icon: 'ri-megaphone-line' },
-    { id: 'technical', nameEn: 'Technical', nameAr: 'التقني', icon: 'ri-code-box-line' },
-    { id: 'financial', nameEn: 'Financial', nameAr: 'المالي', icon: 'ri-money-dollar-circle-line' },
+    { id: 'all', name: t('connections.all'), nameAr: 'الكل', icon: 'ri-apps-line' },
+    { id: 'productivity', name: t('connections.productivity'), nameAr: 'إنتاجية', icon: 'ri-file-line' },
+    { id: 'communication', name: t('connections.communication'), nameAr: 'تواصل', icon: 'ri-message-line' },
+    { id: 'marketing', name: t('connections.marketing'), nameAr: 'تسويق', icon: 'ri-megaphone-line' },
+    { id: 'technical', name: t('connections.technical'), nameAr: 'تقني', icon: 'ri-code-line' },
+    { id: 'financial', name: t('connections.financial'), nameAr: 'مالي', icon: 'ri-money-dollar-line' }
   ];
 
   const filteredConnections =
     selectedCategory === 'all'
-      ? connections
-      : connections.filter((conn) => conn.category === selectedCategory);
+      ? displayConnections
+      : displayConnections.filter((conn) => conn.category === selectedCategory);
 
   const visibleConnections = showAll ? filteredConnections : filteredConnections.slice(0, INITIAL_SHOW);
-  const hasMore = filteredConnections.length > INITIAL_SHOW;
 
-  const handleConnect = (app: AppConnection) => {
-    setSelectedApp(app);
+  const handleAppClick = (app: AppConnection) => {
+    if (app.id === 'all') {
+      setShowAll(!showAll);
+    } else {
+      setSelectedApp(app);
+    }
   };
 
   const handleCloseModal = () => {
     setSelectedApp(null);
   };
 
-  const handleConfirmConnection = () => {
-    if (selectedApp) {
+  const handleConfirmConnection = async () => {
+    if (!selectedApp) return;
+
+    const dbKey = UI_TO_DB_KEY[selectedApp.id];
+    if (!dbKey) {
+      // fallback: keep old UI-only toggle for non-integrated apps
       setConnections((prev) =>
         prev.map((conn) =>
           conn.id === selectedApp.id ? { ...conn, isConnected: !conn.isConnected } : conn
         )
       );
       setSelectedApp(null);
+      return;
     }
+
+    if (!isAuthenticated || !user?.id) return;
+
+    const isCurrentlyConnected = userStatusByKey[dbKey] === 'connected';
+    await setStatus(dbKey, isCurrentlyConnected ? 'disconnected' : 'connected');
+
+    setConnections((prev) =>
+      prev.map((conn) =>
+        conn.id === selectedApp.id ? { ...conn, isConnected: !isCurrentlyConnected } : conn
+      )
+    );
+
+    setSelectedApp(null);
   };
 
-  const connectedCount = connections.filter((c) => c.isConnected).length;
-  const availableCount = connections.filter((c) => c.status === 'available').length;
-  const comingSoonCount = connections.filter((c) => c.status === 'coming-soon').length;
-
   return (
-    <section className="py-20 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 ${
-              isDark ? 'bg-teal-500/20' : 'bg-teal-50'
+    <section id="connections" className={`py-24 ${isDark ? 'bg-[#1e1a40]' : 'bg-gray-50'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className={`font-mono text-4xl md:text-5xl font-bold mb-6 ${
+              isDark ? 'text-white' : 'text-gray-900'
             }`}
           >
-            <i className="ri-links-line text-xl text-teal-500"></i>
-            <span className={`font-mono text-sm font-bold ${isDark ? 'text-teal-400' : 'text-teal-600'}`}>
-              {isRTL ? 'ربط الحسابات' : 'Account Connections'}
-            </span>
-          </div>
-
-          <h2 className={`font-mono text-3xl md:text-4xl font-bold mb-4 transition-colors duration-500 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            {isRTL ? 'اربط حساباتك وابدأ الأتمتة' : 'Connect Your Accounts and Start Automation'}
-          </h2>
-
-          <p className={`font-mono text-lg md:text-xl transition-colors duration-500 max-w-3xl mx-auto ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+            {isRTL ? 'اربط حساباتك وابدأ الأتمتة' : 'Connect Your Accounts & Start Automating'}
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className={`font-mono text-xl max-w-3xl mx-auto ${
+              isDark ? 'text-slate-300' : 'text-gray-700'
+            }`}
+          >
             {isRTL
-              ? 'اربط تطبيقاتك المفضلة ودع الوكلاء يديرون مهامك تلقائياً'
-              : 'Connect your favorite apps and let agents manage your tasks automatically'}
-          </p>
-
-          {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
-            {[
-              { value: connectedCount, label: isRTL ? 'متصل' : 'Connected', color: 'teal' },
-              { value: availableCount, label: isRTL ? 'متاح الآن' : 'Available', color: 'green' },
-              { value: comingSoonCount, label: isRTL ? 'قريباً' : 'Coming Soon', color: 'orange' },
-            ].map((stat, i) => (
-              <div key={i} className={`px-6 py-3 rounded-xl ${isDark ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
-                <span className={`font-mono text-2xl font-bold text-${stat.color}-${isDark ? '400' : '600'}`}>{stat.value}</span>
-                <span className={`font-mono text-sm mx-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{stat.label}</span>
-              </div>
-            ))}
-          </div>
+              ? 'اربط أدواتك المفضلة واترك الذكاء الاصطناعي يدير مهامك اليومية تلقائياً'
+              : 'Connect your favorite tools and let AI handle your daily tasks automatically'}
+          </motion.p>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => { setSelectedCategory(cat.id); setShowAll(false); }}
-              className={`px-5 py-2 rounded-full font-mono text-sm font-bold transition-all duration-300 cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                selectedCategory === cat.id
-                  ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30'
+        {/* Categories */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          {categories.map((category) => (
+            <motion.button
+              key={category.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: categories.indexOf(category) * 0.05 }}
+              onClick={() => {
+                setSelectedCategory(category.id);
+                setShowAll(false);
+              }}
+              className={`px-6 py-3 rounded-2xl font-mono font-bold text-base transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                selectedCategory === category.id
+                  ? isDark
+                    ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
+                    : 'bg-teal-600 text-white shadow-lg shadow-teal-600/20'
                   : isDark
-                  ? 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-[#3a3568]/40 text-white hover:bg-[#3a3568]/60'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md'
               }`}
             >
-              <i className={cat.icon}></i>
-              {isRTL ? cat.nameAr : cat.nameEn}
-            </button>
+              <i className={`${category.icon} text-xl`}></i>
+              {isRTL ? category.nameAr : category.name}
+            </motion.button>
           ))}
         </div>
 
-        {/* Icons Grid */}
-        <div className="flex flex-wrap justify-center gap-4 mb-6">
-          {visibleConnections.map((app) => (
-            <div
-              key={app.id}
-              className="relative group"
-              onMouseEnter={() => setHoveredApp(app.id)}
-              onMouseLeave={() => setHoveredApp(null)}
+        {/* Connections Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {visibleConnections.map((connection, index) => (
+            <motion.div
+              key={connection.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              onClick={() => handleAppClick(connection)}
+              className={`relative p-6 rounded-2xl border cursor-pointer transition-all hover:scale-105 hover:shadow-xl ${
+                isDark
+                  ? 'bg-[#2a2458]/60 border-[#5a5490]/30 hover:bg-[#2a2458]/80'
+                  : 'bg-white border-gray-200 hover:shadow-gray-200/50'
+              }`}
             >
-              {/* Icon Button */}
-              <button
-                onClick={() => handleConnect(app)}
-                disabled={app.status === 'coming-soon'}
-                className={`relative w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 cursor-pointer border-2 ${
-                  app.isConnected
-                    ? 'border-teal-400 shadow-lg shadow-teal-400/30 scale-105'
-                    : app.status === 'coming-soon'
-                    ? isDark
-                      ? 'border-slate-700/40 bg-slate-800/30 opacity-50 cursor-not-allowed'
-                      : 'border-slate-200 bg-slate-100 opacity-50 cursor-not-allowed'
-                    : isDark
-                    ? 'border-slate-700/40 bg-slate-800/50 hover:border-teal-500/60 hover:scale-110 hover:shadow-lg'
-                    : 'border-slate-200 bg-white hover:border-teal-400 hover:scale-110 hover:shadow-lg shadow-sm'
-                }`}
+              {/* Status Badge */}
+              <div className="absolute top-4 right-4">
+                {connection.status === 'coming-soon' ? (
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-mono font-bold ${
+                      isDark ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600'
+                    }`}
+                  >
+                    {isRTL ? 'قريباً' : 'Soon'}
+                  </span>
+                ) : connection.isConnected ? (
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-mono font-bold ${
+                      isDark ? 'bg-teal-500/20 text-teal-400' : 'bg-teal-100 text-teal-600'
+                    }`}
+                  >
+                    {isRTL ? 'متصل' : 'Connected'}
+                  </span>
+                ) : null}
+              </div>
+
+              {/* App Icon */}
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                style={{ backgroundColor: `${connection.color}15` }}
               >
-                <img
-                  src={app.logoUrl}
-                  alt={app.name}
-                  className="w-9 h-9 object-contain"
-                  onError={(e) => {
-                    const target = e.currentTarget as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      const fallback = document.createElement('span');
-                      fallback.className = 'font-bold text-lg';
-                      fallback.style.color = app.color;
-                      fallback.textContent = app.name.charAt(0);
-                      parent.appendChild(fallback);
-                    }
-                  }}
-                />
-                {/* Connected indicator */}
-                {app.isConnected && (
-                  <span className="absolute -top-1 -end-1 w-4 h-4 bg-teal-400 rounded-full border-2 border-white flex items-center justify-center">
-                    <i className="ri-check-line text-white" style={{ fontSize: '8px' }}></i>
+                {connection.logoUrl ? (
+                  <img
+                    src={connection.logoUrl}
+                    alt={connection.name}
+                    className="w-10 h-10 object-contain"
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        const fallback = document.createElement('span');
+                        fallback.className = 'font-bold text-2xl';
+                        fallback.style.color = connection.color;
+                        fallback.textContent = connection.name.charAt(0);
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                  />
+                ) : (
+                  <span className="font-bold text-2xl" style={{ color: connection.color }}>
+                    {connection.name.charAt(0)}
                   </span>
                 )}
-                {/* Coming soon indicator */}
-                {app.status === 'coming-soon' && (
-                  <span className="absolute -top-1 -end-1 w-4 h-4 bg-orange-400 rounded-full border-2 border-white"></span>
-                )}
-              </button>
+              </div>
 
-              {/* Tooltip */}
-              {hoveredApp === app.id && (
-                <div
-                  className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-20 px-3 py-2 rounded-xl shadow-xl whitespace-nowrap pointer-events-none ${
-                    isDark ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-200'
-                  }`}
-                >
-                  <p className={`font-mono text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {isRTL ? app.nameAr : app.name}
-                  </p>
-                  <p className={`font-mono text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {app.status === 'coming-soon'
-                      ? isRTL ? '🔜 قريباً' : '🔜 Coming Soon'
-                      : app.isConnected
-                      ? isRTL ? '✅ متصل' : '✅ Connected'
-                      : isRTL ? 'اضغط للربط' : 'Click to connect'}
-                  </p>
-                  {/* Arrow */}
-                  <div className={`absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent ${isDark ? 'border-t-slate-800' : 'border-t-white'}`}></div>
+              {/* App Info */}
+              <h3
+                className={`font-mono text-xl font-bold mb-2 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}
+              >
+                {isRTL ? connection.nameAr : connection.name}
+              </h3>
+              <p
+                className={`font-mono text-sm mb-4 line-clamp-2 ${
+                  isDark ? 'text-slate-300' : 'text-gray-600'
+                }`}
+              >
+                {isRTL ? connection.descriptionAr : connection.description}
+              </p>
+
+              {/* Automation Tasks */}
+              <div className="space-y-2">
+                {(isRTL ? connection.automationTasksAr : connection.automationTasks)
+                  .slice(0, 2)
+                  .map((task, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: connection.color }}
+                      ></div>
+                      <span
+                        className={`font-mono text-xs ${
+                          isDark ? 'text-slate-400' : 'text-gray-500'
+                        }`}
+                      >
+                        {task}
+                      </span>
+                    </div>
+                  ))}
+                {(isRTL ? connection.automationTasksAr : connection.automationTasks).length > 2 && (
+                  <span
+                    className={`font-mono text-xs ${
+                      isDark ? 'text-slate-500' : 'text-gray-400'
+                    }`}
+                  >
+                    {isRTL
+                      ? `+${(isRTL ? connection.automationTasksAr : connection.automationTasks).length - 2} المزيد`
+                      : `+${(isRTL ? connection.automationTasksAr : connection.automationTasks).length - 2} more`}
+                  </span>
+                )}
+              </div>
+
+              {/* Connect Button */}
+              {connection.id !== 'all' && (
+                <div className="mt-6">
+                  <button
+                    className={`w-full py-3 rounded-xl font-mono font-bold text-sm transition-all cursor-pointer ${
+                      connection.status === 'coming-soon'
+                        ? isDark
+                          ? 'bg-gray-600/30 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : connection.isConnected
+                        ? isDark
+                          ? 'bg-teal-500/20 text-teal-400 hover:bg-teal-500/30'
+                          : 'bg-teal-50 text-teal-600 hover:bg-teal-100'
+                        : 'text-white hover:scale-105'
+                    }`}
+                    style={
+                      connection.status !== 'coming-soon' && !connection.isConnected
+                        ? { background: `linear-gradient(135deg, ${connection.color}, ${connection.color}dd)` }
+                        : undefined
+                    }
+                  >
+                    {connection.status === 'coming-soon'
+                      ? isRTL
+                        ? 'قريباً'
+                        : 'Coming Soon'
+                      : connection.isConnected
+                      ? isRTL
+                        ? 'إدارة الاتصال'
+                        : 'Manage Connection'
+                      : isRTL
+                      ? 'ربط الآن'
+                      : 'Connect Now'}
+                  </button>
                 </div>
               )}
-            </div>
+
+              {/* All Apps Special */}
+              {connection.id === 'all' && (
+                <div className="mt-6">
+                  <button
+                    className={`w-full py-3 rounded-xl font-mono font-bold text-sm transition-all cursor-pointer ${
+                      isDark
+                        ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
+                        : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+                    }`}
+                  >
+                    {showAll
+                      ? isRTL
+                        ? 'عرض أقل'
+                        : 'Show Less'
+                      : isRTL
+                      ? 'عرض الكل'
+                      : 'Show All'}
+                  </button>
+                </div>
+              )}
+            </motion.div>
           ))}
+        </div>
 
-          {/* Show More Button */}
-          {hasMore && !showAll && (
-            <button
-              onClick={() => setShowAll(true)}
-              className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 cursor-pointer border-2 border-dashed ${
+        {/* Show All Toggle */}
+        {filteredConnections.length > INITIAL_SHOW && (
+          <div className="text-center">
+            <motion.button
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              onClick={() => setShowAll(!showAll)}
+              className={`px-8 py-4 rounded-2xl font-mono font-bold text-base transition-all cursor-pointer ${
                 isDark
-                  ? 'border-slate-600 text-slate-400 hover:border-teal-500 hover:text-teal-400 bg-slate-800/30'
-                  : 'border-slate-300 text-slate-500 hover:border-teal-400 hover:text-teal-600 bg-slate-50'
+                  ? 'bg-[#3a3568]/40 text-white hover:bg-[#3a3568]/60'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 shadow-lg'
               }`}
             >
-              <i className="ri-add-line text-xl"></i>
-              <span className="font-mono text-xs font-bold mt-0.5">
-                +{filteredConnections.length - INITIAL_SHOW}
-              </span>
-            </button>
-          )}
+              {showAll
+                ? isRTL
+                  ? 'عرض أقل'
+                  : 'Show Less'
+                : isRTL
+                ? 'عرض المزيد'
+                : 'Show More'}
+            </motion.button>
+          </div>
+        )}
 
-          {/* Show Less Button */}
-          {showAll && hasMore && (
-            <button
-              onClick={() => setShowAll(false)}
-              className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 cursor-pointer border-2 border-dashed ${
-                isDark
-                  ? 'border-slate-600 text-slate-400 hover:border-slate-500 bg-slate-800/30'
-                  : 'border-slate-300 text-slate-500 hover:border-slate-400 bg-slate-50'
-              }`}
-            >
-              <i className="ri-subtract-line text-xl"></i>
-              <span className="font-mono text-xs font-bold mt-0.5">
-                {isRTL ? 'أقل' : 'Less'}
-              </span>
-            </button>
-          )}
-        </div>
-
-        {/* Legend */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mb-10">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-teal-400"></span>
-            <span className={`font-mono text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              {isRTL ? 'متصل' : 'Connected'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-orange-400"></span>
-            <span className={`font-mono text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              {isRTL ? 'قريباً' : 'Coming Soon'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={`w-3 h-3 rounded-full ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></span>
-            <span className={`font-mono text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              {isRTL ? 'متاح للربط' : 'Available'}
-            </span>
-          </div>
-        </div>
-
-        {/* Info Box */}
-        <div className={`mt-4 p-6 rounded-2xl border-2 ${isDark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-slate-50 border-slate-200'}`}>
-          <div className="flex items-start gap-4">
-            <div className={`w-12 h-12 flex-shrink-0 rounded-xl flex items-center justify-center ${isDark ? 'bg-teal-500/20' : 'bg-teal-100'}`}>
-              <i className="ri-information-line text-2xl text-teal-500"></i>
-            </div>
-            <div>
-              <h4 className={`font-mono text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {isRTL ? 'كيف يعمل الربط؟' : 'How does connection work?'}
-              </h4>
-              <p className={`font-mono text-base leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                {isRTL
-                  ? 'عند ربط حسابك، سيتمكن الوكلاء من الوصول إلى بياناتك بشكل آمن لتنفيذ المهام المطلوبة. جميع البيانات محمية ومشفرة، ويمكنك قطع الاتصال في أي وقت.'
-                  : 'When you connect your account, agents will be able to securely access your data to perform requested tasks. All data is protected and encrypted, and you can disconnect at any time.'}
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Connection Modal */}
+        {selectedApp && (
+          <AppConnectionModal
+            app={selectedApp}
+            isOpen={!!selectedApp}
+            onClose={handleCloseModal}
+            onConfirm={handleConfirmConnection}
+          />
+        )}
       </div>
-
-      {/* App Connection Modal */}
-      {selectedApp && (
-        <AppConnectionModal
-          app={selectedApp}
-          isOpen={!!selectedApp}
-          onClose={handleCloseModal}
-          onConfirm={handleConfirmConnection}
-        />
-      )}
     </section>
   );
 };
