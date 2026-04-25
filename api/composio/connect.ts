@@ -1,6 +1,19 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-type ToolkitKey = 'github' | 'gmail' | 'googlecalendar' | 'googledocs' | 'googledrive' | 'chatbotkit';
+type ToolkitKey =
+  | 'github'
+  | 'gmail'
+  | 'googlecalendar'
+  | 'googledocs'
+  | 'googledrive'
+  | 'googlesheets'
+  | 'outlook'
+  | 'slack'
+  | 'trello'
+  | 'youtube'
+  | 'supabase'
+  | 'vercel'
+  | 'chatbotkit';
 
 const AUTH_CONFIG_BY_TOOLKIT: Partial<Record<ToolkitKey, string>> = {
   github: process.env.COMPOSIO_AUTH_CONFIG_GITHUB || '',
@@ -8,6 +21,13 @@ const AUTH_CONFIG_BY_TOOLKIT: Partial<Record<ToolkitKey, string>> = {
   googlecalendar: process.env.COMPOSIO_AUTH_CONFIG_GOOGLECALENDAR || '',
   googledocs: process.env.COMPOSIO_AUTH_CONFIG_GOOGLEDOCS || '',
   googledrive: process.env.COMPOSIO_AUTH_CONFIG_GOOGLEDRIVE || '',
+  googlesheets: process.env.COMPOSIO_AUTH_CONFIG_GOOGLESHEETS || '',
+  outlook: process.env.COMPOSIO_AUTH_CONFIG_OUTLOOK || '',
+  slack: process.env.COMPOSIO_AUTH_CONFIG_SLACK || '',
+  trello: process.env.COMPOSIO_AUTH_CONFIG_TRELLO || '',
+  youtube: process.env.COMPOSIO_AUTH_CONFIG_YOUTUBE || '',
+  supabase: process.env.COMPOSIO_AUTH_CONFIG_SUPABASE || '',
+  vercel: process.env.COMPOSIO_AUTH_CONFIG_VERCEL || '',
   chatbotkit: process.env.COMPOSIO_AUTH_CONFIG_CHATBOTKIT || '',
 };
 
@@ -47,6 +67,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const baseUrl = getBaseUrl(req);
     const callbackUrl = `${baseUrl}/#/integrations/callback?toolkit=${encodeURIComponent(toolkit)}`;
 
+    // NOTE:
+    // - For OAuth2 toolkits, Composio will return a redirect URL to complete auth.
+    // - For API key toolkits, Composio may require credentials. In that case, this endpoint will fail and the UI should show an error.
     const body = {
       auth_config: { id: authConfigId },
       connection: {
