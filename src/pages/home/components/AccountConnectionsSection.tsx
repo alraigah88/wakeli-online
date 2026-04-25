@@ -27,19 +27,13 @@ interface AppConnection {
 }
 
 const AccountConnectionsSection = () => {
-  // Safety gate: don't let any external/widget/composio wiring break the whole SPA.
-  // Enable on preview/dev only.
-  const mode = (import.meta as any).env?.MODE;
-  const isProd = (import.meta as any).env?.PROD === true || mode === 'production';
-  if (isProd) return null;
-
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { isDark } = useTheme();
   const isRTL = i18n.language === 'ar';
-  const { user } = useAuth();
-  const { enabledIntegrations, userStatusByKey, setStatus } = useIntegrations(user?.id);
+  const { user, isAuthenticated } = useAuth();
+  const { enabledIntegrations, userStatusByKey } = useIntegrations(user?.id);
 
-  const [connections, setConnections] = useState<AppConnection[]>([
+  const [connections] = useState<AppConnection[]>([
     {
       id: 'gmail',
       name: 'Gmail',
@@ -60,6 +54,26 @@ const AccountConnectionsSection = () => {
       howItWorks: ['Connect Gmail securely', 'Choose automations', 'AI manages inbox'],
       howItWorksAr: ['اربط جيميل بأمان', 'اختر الأتمتة', 'الذكاء يدير بريدك'],
     },
+    {
+      id: 'github',
+      name: 'GitHub',
+      nameAr: 'جيت هب',
+      logoUrl: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+      color: '#111111',
+      category: 'technical',
+      isConnected: false,
+      description: 'Repositories and issues automation',
+      descriptionAr: 'مستودعات وأتمتة المهام',
+      status: 'available',
+      automationTasks: ['Create issues', 'Summarize PRs', 'Auto label'],
+      automationTasksAr: ['إنشاء تذاكر', 'تلخيص PR', 'وسوم تلقائية'],
+      benefits: ['Faster triage', 'Better tracking'],
+      benefitsAr: ['سرعة التنظيم', 'متابعة أفضل'],
+      tools: ['GitHub API'],
+      toolsAr: ['واجهة GitHub'],
+      howItWorks: ['Connect GitHub', 'Select actions', 'Run automations'],
+      howItWorksAr: ['اربط GitHub', 'اختر الإجراءات', 'شغّل الأتمتة'],
+    },
   ]);
 
   const enabledConnections = useMemo(() => {
@@ -78,10 +92,26 @@ const AccountConnectionsSection = () => {
   }, [connections, enabledIntegrations, userStatusByKey]);
 
   const [selectedApp, setSelectedApp] = useState<AppConnection | null>(null);
+
   const handleConfirmConnection = async () => {
-    // Temporary safe no-op until backend Composio OAuth endpoints are finalized.
+    if (!selectedApp) return;
+
+    const toolkit = selectedApp.id;
+    const userId = isAuthenticated && user?.id ? user.id : 'guest';
+
+    const r = await fetch(`/api/composio/connect?toolkit=${encodeURIComponent(toolkit)}&user_id=${encodeURIComponent(userId)}`);
+    const data = await r.json().catch(() => ({}));
+
+    const redirectUrl = data?.redirect_url;
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+      return;
+    }
+
+    alert('فشل ربط الحساب. حاول مرة ثانية.');
     setSelectedApp(null);
   };
+
   const handleCloseModal = () => setSelectedApp(null);
 
   return (
@@ -129,12 +159,7 @@ const AccountConnectionsSection = () => {
         </div>
 
         {selectedApp && (
-          <AppConnectionModal
-            app={selectedApp}
-            isOpen={!!selectedApp}
-            onClose={handleCloseModal}
-            onConfirm={handleConfirmConnection}
-          />
+          <AppConnectionModal app={selectedApp} isOpen={!!selectedApp} onClose={handleCloseModal} onConfirm={handleConfirmConnection} />
         )}
       </div>
     </section>
