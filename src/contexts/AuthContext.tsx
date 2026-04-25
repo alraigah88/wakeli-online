@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -32,19 +31,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // IMPORTANT: Platform requirement — allow guest browsing.
+  // So we do NOT block the app while waiting for auth.
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        syncUserProfile(session.user);
-      } else {
-        setLoading(false);
-      }
-    });
+    let active = true;
 
-    // Listen for auth changes
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!active) return;
+        // If a session exists, hydrate user profile, otherwise just finish loading.
+        if (session?.user) {
+          void syncUserProfile(session.user);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!active) return;
         if (session?.user) {
           await syncUserProfile(session.user);
         } else {
@@ -54,7 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const syncUserProfile = async (authUser: any) => {
@@ -71,7 +85,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         '';
       const provider = authUser.app_metadata?.provider || 'email';
 
-      // Try to find existing user by auth_id
       const { data: existing } = await supabase
         .from('users')
         .select('*')
@@ -79,7 +92,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (existing) {
-        // Update last login
         await supabase
           .from('users')
           .update({ last_login: new Date().toISOString() })
@@ -95,61 +107,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           emailVerified: existing.email_verified || false,
           phoneVerified: existing.phone_verified || false,
         });
-      } else {
-        // Check by email
-        const { data: byEmail } = await supabase
+        return;
+      }
+
+      const { data: byEmail } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (byEmail) {
+        await supabase
           .from('users')
-          .select('*')
-          .eq('email', email)
-          .maybeSingle();
+          .update({ auth_id: authId, last_login: new Date().toISOString() })
+          .eq('email', email);
 
-        if (byEmail) {
-          // Link auth_id to existing record
-          await supabase
-            .from('users')
-            .update({ auth_id: authId, last_login: new Date().toISOString() })
-            .eq('email', email);
+        setUser({
+          id: byEmail.id,
+          email: byEmail.email,
+          fullName: byEmail.full_name || fullName,
+          avatarUrl: byEmail.avatar_url || avatarUrl,
+          provider: byEmail.provider,
+          phone: byEmail.phone || '',
+          emailVerified: byEmail.email_verified || false,
+          phoneVerified: byEmail.phone_verified || false,
+        });
+        return;
+      }
 
-          setUser({
-            id: byEmail.id,
-            email: byEmail.email,
-            fullName: byEmail.full_name || fullName,
-            avatarUrl: byEmail.avatar_url || avatarUrl,
-            provider: byEmail.provider,
-            phone: byEmail.phone || '',
-            emailVerified: byEmail.email_verified || false,
-            phoneVerified: byEmail.phone_verified || false,
-          });
-        } else {
-          // Create new user
-          const { data: newUser, error } = await supabase
-            .from('users')
-            .insert({
-              auth_id: authId,
-              email,
-              full_name: fullName,
-              avatar_url: avatarUrl,
-              provider,
-              provider_id: authId,
-              email_verified: provider !== 'email',
-              meeting_count: 0,
-            })
-            .select()
-            .maybeSingle();
+      const { data: newUser } = await supabase
+        .from('users')
+        .insert({
+          auth_id: authId,
+          email,
+          full_name: fullName,
+          avatar_url: avatarUrl,
+          provider,
+          provider_id: authId,
+          email_verified: provider !== 'email',
+          meeting_count: 0,
+        })
+        .select()
+        .maybeSingle();
 
-          if (!error && newUser) {
-            setUser({
-              id: newUser.id,
-              email: newUser.email,
-              fullName: newUser.full_name,
-              avatarUrl: newUser.avatar_url,
-              provider: newUser.provider,
-              phone: '',
-              emailVerified: newUser.email_verified,
-              phoneVerified: false,
-            });
-          }
-        }
+      if (newUser) {
+        setUser({
+          id: newUser.id,
+          email: newUser.email,
+          fullName: newUser.full_name,
+          avatarUrl: newUser.avatar_url,
+          provider: newUser.provider,
+          phone: '',
+          emailVerified: newUser.email_verified,
+          phoneVerified: false,
+        });
       }
     } catch (err) {
       console.error('Error syncing user profile:', err);

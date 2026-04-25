@@ -27,9 +27,10 @@ interface AppConnection {
 }
 
 const AccountConnectionsSection = () => {
-  // Hard-disable this section in production until Composio/Decimal widget is configured.
-  // This prevents blank white page caused by widget auth/cross-origin failures.
-  const isProd = (import.meta as any).env?.PROD === true || (import.meta as any).env?.MODE === 'production';
+  // Safety gate: don't let any external/widget/composio wiring break the whole SPA.
+  // Enable on preview/dev only.
+  const mode = (import.meta as any).env?.MODE;
+  const isProd = (import.meta as any).env?.PROD === true || mode === 'production';
   if (isProd) return null;
 
   const { t, i18n } = useTranslation();
@@ -48,34 +49,16 @@ const AccountConnectionsSection = () => {
       category: 'productivity',
       isConnected: false,
       description: 'Email management and automation',
-      descriptionAr: 'إدارة وأتمتة البريد الإلكتروني',
+      descriptionAr: 'إدارة البريد الإلكتروني والأتمتة',
       status: 'available',
       automationTasks: ['Auto-classify emails', 'Smart replies', 'Schedule sending'],
       automationTasksAr: ['تصنيف الإيميلات تلقائياً', 'ردود ذكية', 'جدولة الإرسال'],
-      benefits: [
-        'Save 2+ hours daily on email management',
-        'Never miss important emails',
-        'Auto-organize inbox by priority',
-        'Smart reply suggestions'
-      ],
-      benefitsAr: [
-        'وفر أكثر من ساعتين يومياً في إدارة البريد',
-        'لن تفوتك أي رسالة مهمة',
-        'تنظيم تلقائي حسب الأولوية',
-        'اقتراحات ردود ذكية'
-      ],
+      benefits: ['Save time', 'Never miss important emails', 'Auto organize inbox'],
+      benefitsAr: ['توفير الوقت', 'عدم تفويت المهم', 'تنظيم تلقائي'],
       tools: ['Gmail API', 'AI Classifier', 'Auto Responder'],
-      toolsAr: ['واجهة جيميل', 'مصنف ذكي', 'رد تلقائي'],
-      howItWorks: [
-        'Connect your Gmail account securely',
-        'Choose automation rules and preferences',
-        'AI manages your inbox automatically'
-      ],
-      howItWorksAr: [
-        'اربط حساب جيميل بأمان',
-        'اختر قواعد الأتمتة والتفضيلات',
-        'الذكاء يدير بريدك تلقائياً'
-      ]
+      toolsAr: ['واجهة جيميل', 'تصنيف ذكي', 'رد تلقائي'],
+      howItWorks: ['Connect Gmail securely', 'Choose automations', 'AI manages inbox'],
+      howItWorksAr: ['اربط جيميل بأمان', 'اختر الأتمتة', 'الذكاء يدير بريدك'],
     },
   ]);
 
@@ -95,12 +78,10 @@ const AccountConnectionsSection = () => {
   }, [connections, enabledIntegrations, userStatusByKey]);
 
   const [selectedApp, setSelectedApp] = useState<AppConnection | null>(null);
-
   const handleConfirmConnection = async () => {
-    // no-op in this temporary safe build
+    // Temporary safe no-op until backend Composio OAuth endpoints are finalized.
     setSelectedApp(null);
   };
-
   const handleCloseModal = () => setSelectedApp(null);
 
   return (
@@ -133,14 +114,6 @@ const AccountConnectionsSection = () => {
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement;
                       target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        const fallback = document.createElement('span');
-                        fallback.className = 'font-bold text-2xl';
-                        fallback.style.color = connection.color;
-                        fallback.textContent = connection.name.charAt(0);
-                        parent.appendChild(fallback);
-                      }
                     }}
                   />
                 </div>
