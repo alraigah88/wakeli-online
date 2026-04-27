@@ -21,24 +21,33 @@ interface AppConnection {
     | 'youtube'
     | 'supabase'
     | 'vercel'
-    | 'chatbotkit';
+    | 'chatbotkit'
+    | 'notion'
+    | 'asana'
+    | 'trello'
+    | 'airtable'
+    | 'zapier'
+    | 'mailchimp'
+    | 'hubspot'
+    | 'zoom'
+    | 'calendly'
+    | 'stripe'
+    | 'paypal'
+    | 'twilio'
+    | 'sendgrid'
+    | 'figma'
+    | 'canva'
+    | 'dropbox'
+    | 'onedrive'
+    | 'linear'
+    | 'jira';
   name: string;
-  nameAr: string;
   logoUrl: string;
   color: string;
   category: ConnectionCategory;
   isConnected: boolean;
   description: string;
-  descriptionAr: string;
   status: 'available' | 'coming-soon';
-  automationTasks: string[];
-  automationTasksAr: string[];
-  benefits: string[];
-  benefitsAr: string[];
-  tools: string[];
-  toolsAr: string[];
-  howItWorks: string[];
-  howItWorksAr: string[];
 }
 
 const AccountConnectionsSection = () => {
@@ -52,351 +61,410 @@ const AccountConnectionsSection = () => {
     {
       id: 'gmail',
       name: 'Gmail',
-      nameAr: 'جيميل',
       logoUrl: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_48dp.png',
       color: '#EA4335',
       category: 'productivity',
       isConnected: false,
       description: 'Email management and automation',
-      descriptionAr: 'إدارة البريد الإلكتروني والأتمتة',
       status: 'available',
-      automationTasks: ['Auto-classify emails', 'Smart replies', 'Schedule sending'],
-      automationTasksAr: ['تصنيف الإيميلات تلقائياً', 'ردود ذكية', 'جدولة الإرسال'],
-      benefits: ['Save time', 'Never miss important emails', 'Auto organize inbox'],
-      benefitsAr: ['توفير الوقت', 'عدم تفويت المهم', 'تنظيم تلقائي'],
-      tools: ['Gmail API'],
-      toolsAr: ['واجهة Gmail'],
-      howItWorks: ['Connect Gmail', 'Authorize access', 'Use automations'],
-      howItWorksAr: ['اربط Gmail', 'وافق على الصلاحيات', 'استخدم الأتمتة'],
     },
     {
       id: 'github',
       name: 'GitHub',
-      nameAr: 'جيت هب',
       logoUrl: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
       color: '#111111',
       category: 'technical',
       isConnected: false,
-      description: 'Repositories and issues automation',
-      descriptionAr: 'مستودعات وأتمتة المهام',
+      description: 'Repository management and automation',
       status: 'available',
-      automationTasks: ['Create issues', 'Summarize PRs', 'Auto label'],
-      automationTasksAr: ['إنشاء تذاكر', 'تلخيص PR', 'وسوم تلقائية'],
-      benefits: ['Faster tracking', 'Better collaboration'],
-      benefitsAr: ['متابعة أسرع', 'تعاون أفضل'],
-      tools: ['GitHub API'],
-      toolsAr: ['واجهة GitHub'],
-      howItWorks: ['Connect GitHub', 'Authorize access', 'Use automations'],
-      howItWorksAr: ['اربط GitHub', 'وافق على الصلاحيات', 'استخدم الأتمتة'],
     },
     {
       id: 'googlecalendar',
       name: 'Google Calendar',
-      nameAr: 'تقويم Google',
       logoUrl: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_48dp.png',
       color: '#4285F4',
       category: 'productivity',
       isConnected: false,
-      description: 'Scheduling and calendar automation',
-      descriptionAr: 'حجوزات وأتمتة المواعيد',
+      description: 'Calendar scheduling and automation',
       status: 'available',
-      automationTasks: ['Create events', 'Find free slots'],
-      automationTasksAr: ['إنشاء مواعيد', 'البحث عن أوقات متاحة'],
-      benefits: ['Less back-and-forth', 'Auto reminders'],
-      benefitsAr: ['تقليل الرسائل', 'تذكير تلقائي'],
-      tools: ['Calendar API'],
-      toolsAr: ['واجهة التقويم'],
-      howItWorks: ['Connect Calendar', 'Authorize', 'Automate scheduling'],
-      howItWorksAr: ['اربط التقويم', 'وافق', 'أتمتة المواعيد'],
     },
     {
       id: 'googledocs',
       name: 'Google Docs',
-      nameAr: 'مستندات Google',
       logoUrl: 'https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png',
       color: '#1A73E8',
       category: 'productivity',
       isConnected: false,
-      description: 'Docs creation and automation',
-      descriptionAr: 'إنشاء المستندات وأتمتتها',
+      description: 'Document creation and automation',
       status: 'available',
-      automationTasks: ['Create docs', 'Update docs'],
-      automationTasksAr: ['إنشاء مستند', 'تحديث مستند'],
-      benefits: ['Faster writing', 'Structured templates'],
-      benefitsAr: ['كتابة أسرع', 'قوالب جاهزة'],
-      tools: ['Docs API'],
-      toolsAr: ['واجهة المستندات'],
-      howItWorks: ['Connect Docs', 'Authorize', 'Automate docs'],
-      howItWorksAr: ['اربط المستندات', 'وافق', 'أتمتة المستندات'],
     },
     {
       id: 'googledrive',
       name: 'Google Drive',
-      nameAr: 'Google Drive',
       logoUrl: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png',
       color: '#0F9D58',
       category: 'productivity',
       isConnected: false,
-      description: 'Files and storage automation',
-      descriptionAr: 'أتمتة الملفات والتخزين',
+      description: 'File storage and automation',
       status: 'available',
-      automationTasks: ['Upload files', 'Organize folders'],
-      automationTasksAr: ['رفع ملفات', 'تنظيم مجلدات'],
-      benefits: ['Auto organization', 'Faster sharing'],
-      benefitsAr: ['تنظيم تلقائي', 'مشاركة أسرع'],
-      tools: ['Drive API'],
-      toolsAr: ['واجهة Drive'],
-      howItWorks: ['Connect Drive', 'Authorize', 'Automate files'],
-      howItWorksAr: ['اربط Drive', 'وافق', 'أتمتة الملفات'],
     },
     {
       id: 'googlesheets',
       name: 'Google Sheets',
-      nameAr: 'جداول Google',
       logoUrl: 'https://www.gstatic.com/images/branding/product/2x/sheets_2020q4_48dp.png',
       color: '#34A853',
       category: 'productivity',
       isConnected: false,
       description: 'Spreadsheet automation',
-      descriptionAr: 'أتمتة الجداول',
       status: 'available',
-      automationTasks: ['Write rows', 'Read sheets'],
-      automationTasksAr: ['كتابة صفوف', 'قراءة الجداول'],
-      benefits: ['Automate reporting', 'Sync data'],
-      benefitsAr: ['تقارير تلقائية', 'مزامنة البيانات'],
-      tools: ['Sheets API'],
-      toolsAr: ['واجهة Sheets'],
-      howItWorks: ['Connect Sheets', 'Authorize', 'Automate sheets'],
-      howItWorksAr: ['اربط Sheets', 'وافق', 'أتمتة الجداول'],
     },
     {
       id: 'outlook',
       name: 'Outlook',
-      nameAr: 'Outlook',
       logoUrl: 'https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/outlook_48x1.svg',
-      color: '#0A66C2',
+      color: '#0078D4',
       category: 'communication',
       isConnected: false,
-      description: 'Email and calendar on Microsoft',
-      descriptionAr: 'بريد وتقويم مايكروسوفت',
+      description: 'Email and calendar management',
       status: 'available',
-      automationTasks: ['Read emails', 'Send emails'],
-      automationTasksAr: ['قراءة البريد', 'إرسال البريد'],
-      benefits: ['Centralized inbox', 'Automations'],
-      benefitsAr: ['إدارة أسهل', 'أتمتة'],
-      tools: ['Microsoft Graph'],
-      toolsAr: ['Graph'],
-      howItWorks: ['Connect Outlook', 'Authorize', 'Automate'],
-      howItWorksAr: ['اربط Outlook', 'وافق', 'شغّل الأتمتة'],
     },
     {
       id: 'slack',
       name: 'Slack',
-      nameAr: 'سلاك',
       logoUrl: 'https://a.slack-edge.com/80588/marketing/img/meta/slack_hash_256.png',
       color: '#4A154B',
       category: 'communication',
       isConnected: false,
       description: 'Team messaging automation',
-      descriptionAr: 'أتمتة رسائل الفريق',
       status: 'available',
-      automationTasks: ['Post messages', 'Summarize threads'],
-      automationTasksAr: ['إرسال رسائل', 'تلخيص المحادثات'],
-      benefits: ['Faster updates', 'Less noise'],
-      benefitsAr: ['تحديثات أسرع', 'تنظيم أفضل'],
-      tools: ['Slack API'],
-      toolsAr: ['واجهة Slack'],
-      howItWorks: ['Connect Slack', 'Authorize', 'Automate messages'],
-      howItWorksAr: ['اربط Slack', 'وافق', 'أتمتة الرسائل'],
     },
     {
       id: 'discord',
       name: 'Discord',
-      nameAr: 'ديسكورد',
       logoUrl: 'https://discord.com/assets/847541504914fd33810e70a0ea73177e.ico',
       color: '#5865F2',
       category: 'communication',
       isConnected: false,
       description: 'Community and server automation',
-      descriptionAr: 'أتمتة المجتمع والخادم',
       status: 'available',
-      automationTasks: ['Send messages', 'Manage roles'],
-      automationTasksAr: ['إرسال رسائل', 'إدارة الأدوار'],
-      benefits: ['Better moderation', 'Automated tasks'],
-      benefitsAr: ['إشراف أفضل', 'مهام آلية'],
-      tools: ['Discord API'],
-      toolsAr: ['واجهة Discord'],
-      howItWorks: ['Connect Discord', 'Authorize', 'Automate'],
-      howItWorksAr: ['اربط Discord', 'وافق', 'أتمتة'],
     },
     {
       id: 'youtube',
       name: 'YouTube',
-      nameAr: 'يوتيوب',
       logoUrl: 'https://www.gstatic.com/youtube/img/branding/favicon/favicon_144x144.png',
       color: '#FF0000',
       category: 'marketing',
       isConnected: false,
       description: 'Channel automation',
-      descriptionAr: 'أتمتة القناة',
       status: 'available',
-      automationTasks: ['Upload videos', 'Read comments'],
-      automationTasksAr: ['رفع فيديو', 'قراءة التعليقات'],
-      benefits: ['Faster operations', 'Better engagement'],
-      benefitsAr: ['إدارة أسرع', 'تفاعل أفضل'],
-      tools: ['YouTube API'],
-      toolsAr: ['واجهة YouTube'],
-      howItWorks: ['Connect YouTube', 'Authorize', 'Automate'],
-      howItWorksAr: ['اربط YouTube', 'وافق', 'شغّل الأتمتة'],
     },
     {
       id: 'supabase',
       name: 'Supabase',
-      nameAr: 'Supabase',
       logoUrl: 'https://supabase.com/favicon/favicon-32x32.png',
       color: '#3ECF8E',
       category: 'technical',
       isConnected: false,
-      description: 'Database automations',
-      descriptionAr: 'أتمتة قاعدة البيانات',
+      description: 'Database automation',
       status: 'available',
-      automationTasks: ['Read/write data'],
-      automationTasksAr: ['قراءة/كتابة البيانات'],
-      benefits: ['Automate ops', 'Sync data'],
-      benefitsAr: ['أتمتة التشغيل', 'مزامنة'],
-      tools: ['Supabase'],
-      toolsAr: ['Supabase'],
-      howItWorks: ['Connect Supabase', 'Authorize', 'Automate'],
-      howItWorksAr: ['اربط Supabase', 'وافق', 'شغّل الأتمتة'],
     },
     {
       id: 'vercel',
       name: 'Vercel',
-      nameAr: 'Vercel',
       logoUrl: 'https://assets.vercel.com/image/upload/front/favicon/vercel/180x180.png',
       color: '#000000',
       category: 'technical',
       isConnected: false,
-      description: 'Deployments automation',
-      descriptionAr: 'أتمتة النشر',
+      description: 'Deployment automation',
       status: 'available',
-      automationTasks: ['Deploy', 'Read logs'],
-      automationTasksAr: ['نشر', 'قراءة السجلات'],
-      benefits: ['Faster ops'],
-      benefitsAr: ['تشغيل أسرع'],
-      tools: ['Vercel API'],
-      toolsAr: ['Vercel'],
-      howItWorks: ['Connect Vercel', 'Authorize', 'Automate'],
-      howItWorksAr: ['اربط Vercel', 'وافق', 'شغّل الأتمتة'],
     },
     {
       id: 'chatbotkit',
       name: 'ChatbotKit',
-      nameAr: 'ChatbotKit',
       logoUrl: 'https://chatbotkit.com/favicon.ico',
-      color: '#7C3AED',
+      color: '#000000',
       category: 'technical',
       isConnected: false,
-      description: 'ChatbotKit automations',
-      descriptionAr: 'أتمتة ChatbotKit',
+      description: 'Chatbot automation',
       status: 'available',
-      automationTasks: ['Connect account'],
-      automationTasksAr: ['ربط الحساب'],
-      benefits: ['Automation'],
-      benefitsAr: ['أتمتة'],
-      tools: ['ChatbotKit'],
-      toolsAr: ['ChatbotKit'],
-      howItWorks: ['Connect', 'Authorize'],
-      howItWorksAr: ['اربط', 'وافق'],
+    },
+    {
+      id: 'notion',
+      name: 'Notion',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Notion-logo.svg',
+      color: '#000000',
+      category: 'productivity',
+      isConnected: false,
+      description: 'Workspace automation',
+      status: 'available',
+    },
+    {
+      id: 'asana',
+      name: 'Asana',
+      logoUrl: 'https://luna.asset.asana.biz/1.0/image/favicon.png',
+      color: '#F06A4D',
+      category: 'productivity',
+      isConnected: false,
+      description: 'Project management automation',
+      status: 'available',
+    },
+    {
+      id: 'trello',
+      name: 'Trello',
+      logoUrl: 'https://d2k5dcd8bfxwq2.cloudfront.net/static/images/favicon.ico',
+      color: '#0052CC',
+      category: 'productivity',
+      isConnected: false,
+      description: 'Board management automation',
+      status: 'available',
+    },
+    {
+      id: 'airtable',
+      name: 'Airtable',
+      logoUrl: 'https://www.airtable.com/favicon.ico',
+      color: '#18BFFF',
+      category: 'productivity',
+      isConnected: false,
+      description: 'Database automation',
+      status: 'available',
+    },
+    {
+      id: 'zapier',
+      name: 'Zapier',
+      logoUrl: 'https://zapier.com/favicon.ico',
+      color: '#FF4F00',
+      category: 'technical',
+      isConnected: false,
+      description: 'Workflow automation',
+      status: 'available',
+    },
+    {
+      id: 'mailchimp',
+      name: 'Mailchimp',
+      logoUrl: 'https://mailchimp.com/favicon.ico',
+      color: '#FFE01B',
+      category: 'marketing',
+      isConnected: false,
+      description: 'Email marketing automation',
+      status: 'available',
+    },
+    {
+      id: 'hubspot',
+      name: 'HubSpot',
+      logoUrl: 'https://www.hubspot.com/favicon.ico',
+      color: '#FF7A59',
+      category: 'marketing',
+      isConnected: false,
+      description: 'CRM automation',
+      status: 'available',
+    },
+    {
+      id: 'zoom',
+      name: 'Zoom',
+      logoUrl: 'https://www.zoom.us/favicon.ico',
+      color: '#0B5CFF',
+      category: 'communication',
+      isConnected: false,
+      description: 'Video meeting automation',
+      status: 'available',
+    },
+    {
+      id: 'calendly',
+      name: 'Calendly',
+      logoUrl: 'https://calendly.com/favicon.ico',
+      color: '#006B3F',
+      category: 'productivity',
+      isConnected: false,
+      description: 'Scheduling automation',
+      status: 'available',
+    },
+    {
+      id: 'stripe',
+      name: 'Stripe',
+      logoUrl: 'https://stripe.com/favicon.ico',
+      color: '#635BFF',
+      category: 'financial',
+      isConnected: false,
+      description: 'Payment automation',
+      status: 'available',
+    },
+    {
+      id: 'paypal',
+      name: 'PayPal',
+      logoUrl: 'https://www.paypal.com/favicon.ico',
+      color: '#003087',
+      category: 'financial',
+      isConnected: false,
+      description: 'Payment processing',
+      status: 'available',
+    },
+    {
+      id: 'twilio',
+      name: 'Twilio',
+      logoUrl: 'https://www.twilio.com/favicon.ico',
+      color: '#F22F46',
+      category: 'communication',
+      isConnected: false,
+      description: 'SMS and voice automation',
+      status: 'available',
+    },
+    {
+      id: 'sendgrid',
+      name: 'SendGrid',
+      logoUrl: 'https://sendgrid.com/favicon.ico',
+      color: '#1D3557',
+      category: 'marketing',
+      isConnected: false,
+      description: 'Email delivery automation',
+      status: 'available',
+    },
+    {
+      id: 'figma',
+      name: 'Figma',
+      logoUrl: 'https://www.figma.com/favicon.ico',
+      color: '#F24E1E',
+      category: 'technical',
+      isConnected: false,
+      description: 'Design automation',
+      status: 'available',
+    },
+    {
+      id: 'canva',
+      name: 'Canva',
+      logoUrl: 'https://www.canva.com/favicon.ico',
+      color: '#00C4CC',
+      category: 'marketing',
+      isConnected: false,
+      description: 'Design tool automation',
+      status: 'available',
+    },
+    {
+      id: 'dropbox',
+      name: 'Dropbox',
+      logoUrl: 'https://www.dropbox.com/favicon.ico',
+      color: '#0061FF',
+      category: 'productivity',
+      isConnected: false,
+      description: 'File storage automation',
+      status: 'available',
+    },
+    {
+      id: 'onedrive',
+      name: 'OneDrive',
+      logoUrl: 'https://onedrive.live.com/favicon.ico',
+      color: '#0078D4',
+      category: 'productivity',
+      isConnected: false,
+      description: 'Cloud storage automation',
+      status: 'available',
+    },
+    {
+      id: 'linear',
+      name: 'Linear',
+      logoUrl: 'https://linear.app/favicon.ico',
+      color: '#5E6AD2',
+      category: 'technical',
+      isConnected: false,
+      description: 'Issue tracking automation',
+      status: 'available',
+    },
+    {
+      id: 'jira',
+      name: 'Jira',
+      logoUrl: 'https://www.atlassian.com/favicon.ico',
+      color: '#0052CC',
+      category: 'technical',
+      isConnected: false,
+      description: 'Project tracking automation',
+      status: 'available',
     },
   ]);
 
-  const enabledConnections = useMemo(() => {
-    return connections
-      .map((c) => {
-        const dbKey = (UI_TO_DB_KEY as any)[c.id] as string | undefined;
-        const enabled = dbKey ? !!(enabledIntegrations as any)[dbKey]?.enabled : true;
-        const status = dbKey ? (userStatusByKey as any)[dbKey] : undefined;
-        return {
-          ...c,
-          isConnected: status === 'connected',
-          status: enabled ? c.status : 'coming-soon',
-        };
-      })
-      .filter((c) => c.status !== 'coming-soon');
-  }, [connections, enabledIntegrations, userStatusByKey]);
-
   const [selectedApp, setSelectedApp] = useState<AppConnection | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleConfirmConnection = async () => {
-    if (!selectedApp) return;
+  const categorizedConnections = useMemo(() => {
+    const categories: Record<ConnectionCategory, AppConnection[]> = {
+      productivity: [],
+      communication: [],
+      marketing: [],
+      technical: [],
+      financial: [],
+    };
 
-    const toolkit = selectedApp.id;
-    const userId = isAuthenticated && user?.id ? user.id : 'guest';
+    connections.forEach((conn) => {
+      categories[conn.category].push(conn);
+    });
 
-    const r = await fetch(`/api/composio/connect?toolkit=${encodeURIComponent(toolkit)}&user_id=${encodeURIComponent(userId)}`);
-    const data = await r.json().catch(() => ({}));
+    return categories;
+  }, [connections]);
 
-    const redirectUrl = data?.redirect_url;
-    if (redirectUrl) {
-      window.location.href = redirectUrl;
-      return;
-    }
-
-    alert('فشل ربط الحساب. تأكد أن COMPOSIO_API_KEY والمتغيرات موجودة في Vercel ثم حاول مرة ثانية.');
-    setSelectedApp(null);
+  const handleAppClick = (app: AppConnection) => {
+    setSelectedApp(app);
+    setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => setSelectedApp(null);
+  const categoryLabels: Record<ConnectionCategory, string> = {
+    productivity: 'Productivity',
+    communication: 'Communication',
+    marketing: 'Marketing',
+    technical: 'Technical',
+    financial: 'Financial',
+  };
 
   return (
-    <section id="account-connections" className="py-16">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className={`font-mono text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {isRTL ? 'اربط حساباتك' : 'Connect Your Accounts'}
-          </h2>
-        </div>
+    <section className={`py-16 px-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="max-w-7xl mx-auto">
+        <h2 className={`text-3xl font-bold mb-12 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          Connect Your Accounts
+        </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {enabledConnections.map((connection) => (
-            <button
-              key={connection.id}
-              onClick={() => setSelectedApp(connection)}
-              className={`p-6 rounded-2xl border text-left transition ${
-                isDark ? 'bg-[#2a2458] border-[#5a5490]/30 text-white' : 'bg-white border-gray-200 text-gray-900'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: `${connection.color}20` }}
-                >
-                  <img
-                    src={connection.logoUrl}
-                    alt={connection.name}
-                    className="w-8 h-8 object-contain"
-                    onError={(e) => {
-                      const target = e.currentTarget as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="font-mono font-bold text-lg">{isRTL ? connection.nameAr : connection.name}</div>
-                  <div className={`font-mono text-sm ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
-                    {isRTL ? connection.descriptionAr : connection.description}
-                  </div>
-                </div>
+        {Object.entries(categorizedConnections).map(([category, apps]) => (
+          apps.length > 0 && (
+            <div key={category} className="mb-12">
+              <h3 className={`text-xl font-semibold mb-6 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                {categoryLabels[category as ConnectionCategory]}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {apps.map((app) => (
+                  <button
+                    key={app.id}
+                    onClick={() => handleAppClick(app)}
+                    className={`flex flex-col items-center justify-center p-4 rounded-lg transition-all hover:scale-105 ${
+                      isDark
+                        ? 'bg-gray-800 hover:bg-gray-700 border border-gray-700'
+                        : 'bg-white hover:bg-gray-100 border border-gray-200'
+                    }`}
+                    title={app.name}
+                  >
+                    <img
+                      src={app.logoUrl}
+                      alt={app.name}
+                      className="w-10 h-10 mb-2 object-contain"
+                    />
+                    <span className={`text-xs font-medium text-center line-clamp-2 ${
+                      isDark ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      {app.name}
+                    </span>
+                  </button>
+                ))}
               </div>
-            </button>
-          ))}
-        </div>
-
-        {selectedApp && (
-          <AppConnectionModal app={selectedApp} isOpen={!!selectedApp} onClose={handleCloseModal} onConfirm={handleConfirmConnection} />
-        )}
+            </div>
+          )
+        ))}
       </div>
+
+      {selectedApp && (
+        <AppConnectionModal
+          app={selectedApp}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedApp(null);
+          }}
+        />
+      )}
     </section>
   );
 };
