@@ -17,7 +17,7 @@ interface AppConnection {
     | 'googlesheets'
     | 'outlook'
     | 'slack'
-    | 'trello'
+    | 'discord'
     | 'youtube'
     | 'supabase'
     | 'vercel'
@@ -210,24 +210,24 @@ const AccountConnectionsSection = () => {
       howItWorksAr: ['اربط Slack', 'وافق', 'أتمتة الرسائل'],
     },
     {
-      id: 'trello',
-      name: 'Trello',
-      nameAr: 'تريلو',
-      logoUrl: 'https://cdn.worldvectorlogo.com/logos/trello.svg',
-      color: '#0052CC',
-      category: 'productivity',
+      id: 'discord',
+      name: 'Discord',
+      nameAr: 'ديسكورد',
+      logoUrl: 'https://discord.com/assets/847541504914fd33810e70a0ea73177e.ico',
+      color: '#5865F2',
+      category: 'communication',
       isConnected: false,
-      description: 'Boards and tasks automation',
-      descriptionAr: 'لوحات ومهام',
+      description: 'Community and server automation',
+      descriptionAr: 'أتمتة المجتمع والخادم',
       status: 'available',
-      automationTasks: ['Create cards', 'Move cards'],
-      automationTasksAr: ['إنشاء كروت', 'تحريك الكروت'],
-      benefits: ['Visual workflow', 'Better planning'],
-      benefitsAr: ['وضوح أكثر', 'تخطيط أفضل'],
-      tools: ['Trello API'],
-      toolsAr: ['واجهة Trello'],
-      howItWorks: ['Connect Trello', 'Authorize', 'Automate boards'],
-      howItWorksAr: ['اربط Trello', 'وافق', 'أتمتة اللوحات'],
+      automationTasks: ['Send messages', 'Manage roles'],
+      automationTasksAr: ['إرسال رسائل', 'إدارة الأدوار'],
+      benefits: ['Better moderation', 'Automated tasks'],
+      benefitsAr: ['إشراف أفضل', 'مهام آلية'],
+      tools: ['Discord API'],
+      toolsAr: ['واجهة Discord'],
+      howItWorks: ['Connect Discord', 'Authorize', 'Automate'],
+      howItWorksAr: ['اربط Discord', 'وافق', 'أتمتة'],
     },
     {
       id: 'youtube',
