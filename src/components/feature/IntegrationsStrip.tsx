@@ -12,24 +12,82 @@ const IntegrationsStrip = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const platforms = [
-    { name: 'Google', icon: 'ri-google-fill', color: '#4285F4' },
-    { name: 'Microsoft', icon: 'ri-microsoft-fill', color: '#00A4EF' },
-    { name: 'Facebook', icon: 'ri-facebook-fill', color: '#1877F2' },
+    // Communication & Social
+    { name: 'Slack', icon: 'ri-slack-fill', color: '#4A154B' },
+    { name: 'Discord', icon: 'ri-discord-fill', color: '#5865F2' },
+    { name: 'Microsoft Teams', icon: 'ri-microsoft-fill', color: '#6264A7' },
+    { name: 'Zoom', icon: 'ri-vidicon-fill', color: '#2D8CFF' },
+    { name: 'WhatsApp', icon: 'ri-whatsapp-fill', color: '#25D366' },
+    { name: 'Telegram', icon: 'ri-telegram-fill', color: '#0088cc' },
+
+    // Email & Calendar
+    { name: 'Gmail', icon: 'ri-gmail-fill', color: '#EA4335' },
+    { name: 'Outlook', icon: 'ri-mail-fill', color: '#0078D4' },
+    { name: 'Calendly', icon: 'ri-calendar-fill', color: '#006BFF' },
+
+    // Productivity & Project Management
+    { name: 'Notion', icon: 'ri-notion-fill', color: '#000000' },
+    { name: 'Asana', icon: 'ri-task-fill', color: '#F06A6A' },
+    { name: 'Linear', icon: 'ri-line-chart-fill', color: '#5E6AD2' },
+    { name: 'Airtable', icon: 'ri-table-fill', color: '#18BFFF' },
+
+    // Development & Design
+    { name: 'GitHub', icon: 'ri-github-fill', color: '#181717' },
+    { name: 'Figma', icon: 'ri-pencil-ruler-2-fill', color: '#F24E1E' },
+    { name: 'Canva', icon: 'ri-palette-fill', color: '#00C4CC' },
+
+    // Cloud Storage
+    { name: 'Google Drive', icon: 'ri-google-drive-fill', color: '#4285F4' },
+    { name: 'Dropbox', icon: 'ri-dropbox-fill', color: '#0061FF' },
+    { name: 'OneDrive', icon: 'ri-microsoft-fill', color: '#0078D4' },
+
+    // Social Media
     { name: 'Instagram', icon: 'ri-instagram-fill', color: '#E4405F' },
     { name: 'Twitter', icon: 'ri-twitter-x-fill', color: '#000000' },
     { name: 'LinkedIn', icon: 'ri-linkedin-fill', color: '#0A66C2' },
     { name: 'YouTube', icon: 'ri-youtube-fill', color: '#FF0000' },
-    { name: 'WhatsApp', icon: 'ri-whatsapp-fill', color: '#25D366' },
-    { name: 'Slack', icon: 'ri-slack-fill', color: '#4A154B' },
-    { name: 'GitHub', icon: 'ri-github-fill', color: '#181717' },
+    { name: 'TikTok', icon: 'ri-tiktok-fill', color: '#000000' },
+    { name: 'Facebook', icon: 'ri-facebook-fill', color: '#1877F2' },
+
+    // E-commerce & Payments
     { name: 'Shopify', icon: 'ri-shopping-bag-fill', color: '#96BF48' },
-    { name: 'WordPress', icon: 'ri-wordpress-fill', color: '#21759B' },
     { name: 'Stripe', icon: 'ri-bank-card-fill', color: '#635BFF' },
     { name: 'PayPal', icon: 'ri-paypal-fill', color: '#00457C' },
-    { name: 'Mailchimp', icon: 'ri-mail-send-fill', color: '#FFE01B' },
-    { name: 'HubSpot', icon: 'ri-customer-service-2-fill', color: '#FF7A59' },
+
+    // Business & CRM
     { name: 'Salesforce', icon: 'ri-cloud-fill', color: '#00A1E0' },
-    { name: 'Zoom', icon: 'ri-vidicon-fill', color: '#2D8CFF' },
+    { name: 'HubSpot', icon: 'ri-contacts-book-fill', color: '#FF7A59' },
+    { name: 'Intercom', icon: 'ri-customer-service-2-fill', color: '#0099F7' },
+
+    // Forms & Surveys
+    { name: 'Typeform', icon: 'ri-questionnaire-fill', color: '#262627' },
+    { name: 'Google Forms', icon: 'ri-file-list-3-fill', color: '#673AB7' },
+
+    // Analytics & Marketing
+    { name: 'Google Analytics', icon: 'ri-line-chart-fill', color: '#E37400' },
+    { name: 'Mailchimp', icon: 'ri-mail-send-fill', color: '#FFE01B' },
+
+    // Entertainment & Media
+    { name: 'Spotify', icon: 'ri-spotify-fill', color: '#1DB954' },
+    { name: 'Netflix', icon: 'ri-netflix-fill', color: '#E50914' },
+
+    // AI & Automation
+    { name: 'OpenAI', icon: 'ri-robot-fill', color: '#412991' },
+    { name: 'Zapier', icon: 'ri-links-fill', color: '#FF4A00' },
+
+    // More platforms (reaching 50+ integrations)
+    { name: 'WordPress', icon: 'ri-wordpress-fill', color: '#21759B' },
+    { name: 'Webflow', icon: 'ri-window-fill', color: '#4353FF' },
+    { name: 'Vercel', icon: 'ri-triangle-fill', color: '#000000' },
+    { name: 'Netlify', icon: 'ri-global-fill', color: '#00C7B7' },
+    { name: 'AWS', icon: 'ri-cloud-fill', color: '#FF9900' },
+    { name: 'Google Cloud', icon: 'ri-google-fill', color: '#4285F4' },
+    { name: 'Azure', icon: 'ri-microsoft-fill', color: '#0078D4' },
+    { name: 'DigitalOcean', icon: 'ri-water-drop-fill', color: '#0080FF' },
+    { name: 'Heroku', icon: 'ri-cloud-fill', color: '#430098' },
+    { name: 'MongoDB', icon: 'ri-database-2-fill', color: '#47A248' },
+    { name: 'PostgreSQL', icon: 'ri-database-fill', color: '#336791' },
+    { name: 'Redis', icon: 'ri-database-2-fill', color: '#DC382D' }
   ];
 
   // Neural network background animation
