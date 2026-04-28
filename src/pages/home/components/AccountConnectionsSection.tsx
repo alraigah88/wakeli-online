@@ -404,6 +404,29 @@ const AccountConnectionsSection = () => {
     setIsModalOpen(true);
   };
 
+  const handleConnect = async (app: AppConnection) => {
+    if (!isAuthenticated) {
+      // If not authenticated, we can still try as guest or show login
+      // For now, let's proceed as guest if user is not logged in
+    }
+
+    try {
+      const userId = user?.id || 'guest';
+      const response = await fetch(`/api/composio/connect?toolkit=${app.id}&userId=${userId}`);
+      const data = await response.json();
+
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
+      } else {
+        console.error('Failed to get redirect URL:', data);
+        alert(isRTL ? 'فشل الحصول على رابط الاتصال' : 'Failed to get connection URL');
+      }
+    } catch (error) {
+      console.error('Error connecting app:', error);
+      alert(isRTL ? 'حدث خطأ أثناء محاولة الاتصال' : 'An error occurred while trying to connect');
+    }
+  };
+
   const categoryLabels: Record<ConnectionCategory, string> = {
     productivity: 'Productivity',
     communication: 'Communication',
@@ -463,6 +486,7 @@ const AccountConnectionsSection = () => {
             setIsModalOpen(false);
             setSelectedApp(null);
           }}
+          onConfirm={() => handleConnect(selectedApp)}
         />
       )}
     </section>
