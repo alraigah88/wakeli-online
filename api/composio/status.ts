@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserConnectionStatuses, setCorsHeaders } from './_helpers';
+import { getUserConnectionStatuses, setCorsHeaders } from './_helpers.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);

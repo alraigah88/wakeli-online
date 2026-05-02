@@ -4,7 +4,7 @@ import {
   initiateConnection,
   normalizeToolkit,
   setCorsHeaders,
-} from './_helpers';
+} from './_helpers.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
