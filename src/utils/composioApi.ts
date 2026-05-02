@@ -3,41 +3,139 @@ import { supabase } from '../contexts/AuthContext';
 export type ComposioConnectResult = {
   redirectUrl: string;
   connectedAccountId?: string;
+  toolkit?: string;
+  userId?: string;
 };
 
 const isBrowser = typeof window !== 'undefined';
 
-/**
- * IMPORTANT:
- * The embedded Composio/Decimal widget can break the whole app when it runs
- * inside an iframe and tries to postMessage / access cross-origin frames.
- * Until the widget is configured with the correct allowed origins + keys,
- * we hard-disable widget init in production to keep the site usable.
- */
-const SHOULD_DISABLE_WIDGET =
-  (import.meta as any).env?.PROD === true ||
-  (import.meta as any).env?.MODE === 'production';
-
-export async function connectComposioToolkit(toolkit: string): Promise<ComposioConnectResult> {
-  // Keep UI alive even if widget/integration is misconfigured.
-  if (SHOULD_DISABLE_WIDGET) {
-    throw new Error('Composio integration is temporarily disabled on production.');
-  }
-
+export async function connectComposioToolkit(
+  toolkit: string,
+  options?: { userId?: string },
+): Promise<ComposioConnectResult> {
   if (!isBrowser) {
-    throw new Error('Must be called in the browser');
+    throw new Error('connectComposioToolkit must be called in the browser');
   }
 
-  const { data: auth } = await supabase.auth.getSession();
-  const accessToken = auth?.session?.access_token;
-
-  if (!accessToken) {
-    throw new Error('Not authenticated');
+  let userId = options?.userId;
+  if (!userId) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      userId = data?.session?.user?.id || 'guest';
+    } catch {
+      userId = 'guest';
+    }
   }
 
-  // Placeholder for future server-side integration.
-  // NOTE: Keep function signature stable for UI.
+  const url = `/api/composio/connect?toolkit=${encodeURIComponent(toolkit)}&user_id=${encodeURIComponent(userId)}`;
+  const r = await fetch(url, { method: 'GET', credentials: 'include' });
+  const data = await r.json().catch(() => ({}));
+
+  if (!r.ok) {
+    throw new Error(data?.message || data?.error || `Connection failed (${r.status})`);
+  }
+
   return {
-    redirectUrl: '',
+    redirectUrl: data.redirect_url || '',
+    connectedAccountId: data.connected_account_id,
+    toolkit: data.toolkit,
+    userId: data.user_id,
   };
+}
+
+export async function openComposioOAuthPopup(
+  toolkit: string,
+  options?: { userId?: string },
+): Promise<{ status: 'success' | 'error' | 'closed'; toolkit: string }> {
+  const { redirectUrl } = await connectComposioToolkit(toolkit, options);
+  if (!redirectUrl) {
+    return { status: 'error', toolkit };
+  }
+
+  return new Promise((resolve) => {
+    const popup = window.open(
+      redirectUrl,
+      `composio-${toolkit}`,
+      'width=640,height=720,resizable=yes,scrollbars=yes',
+    );
+
+    if (!popup) {
+      window.location.href = redirectUrl;
+      resolve({ status: 'closed', toolkit });
+      return;
+    }
+
+    let resolved = false;
+    const onMessage = (event: MessageEvent) => {
+      const data = event?.data;
+      if (!data || data.type !== 'composio:callback') return;
+      if (data.toolkit && data.toolkit !== toolkit) return;
+      resolved = true;
+      window.removeEventListener('message', onMessage);
+      try {
+        popup.close();
+      } catch {}
+      resolve({ status: data.status === 'success' ? 'success' : 'error', toolkit });
+    };
+
+    window.addEventListener('message', onMessage);
+
+    const interval = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(interval);
+        if (!resolved) {
+          window.removeEventListener('message', onMessage);
+          resolve({ status: 'closed', toolkit });
+        }
+      }
+    }, 500);
+  });
+}
+
+export async function fetchConnectionStatuses(
+  userId: string,
+): Promise<Record<string, string>> {
+  if (!userId) return {};
+  const r = await fetch(`/api/composio/status?user_id=${encodeURIComponent(userId)}`);
+  if (!r.ok) return {};
+  const data = await r.json().catch(() => ({}));
+  return data?.statuses || {};
+}
+
+export async function disconnectIntegration(
+  toolkit: string,
+  userId: string,
+): Promise<boolean> {
+  const r = await fetch(`/api/composio/disconnect`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ toolkit, user_id: userId }),
+  });
+  return r.ok;
+}
+
+export async function executeComposioAction(opts: {
+  userId: string;
+  toolkit?: string;
+  action: string;
+  arguments?: Record<string, any>;
+  connectedAccountId?: string;
+}): Promise<any> {
+  const r = await fetch('/api/composio/execute', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      user_id: opts.userId,
+      toolkit: opts.toolkit,
+      action: opts.action,
+      arguments: opts.arguments || {},
+      connected_account_id: opts.connectedAccountId,
+    }),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const message = data?.message || data?.error || `Execution failed (${r.status})`;
+    throw new Error(message);
+  }
+  return data;
 }
