@@ -43,14 +43,10 @@ const IntegrationsStrip = () => {
       const handleConnect = async (tool: (typeof allTools)[0]) => {
               setLoading(tool.slug);
               try {
-                        const response = await fetch('/api/composio/connect', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ appName: tool.slug }),
-                        });
-                        const data = await response.json();
-                        if (data.url) {
-                                    window.open(data.url, 'oauth', 'width=600,height=700');
+                        const response = await fetch(`/api/composio/connect?toolkit=${tool.slug}`);
+                                const data = await response.json();
+                        if (data.redirect_url) {
+                                    window.open(data.redirect_url, 'oauth', 'width=600,height=700');
                         }
               } catch (error) {
                         console.error('Connection error:', error);
