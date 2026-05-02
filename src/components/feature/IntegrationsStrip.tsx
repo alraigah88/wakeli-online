@@ -81,8 +81,8 @@ const IntegrationsStrip = () => {
                                                         {loading === tool.slug ? 'جاري...' : 'Connect'}
                                                   </span
                                     </button>                                  ))}
-                                </div>div>
-                        </div>div>
+                                </div>
+                        </div>
                   </div>div>
                 );
 };
