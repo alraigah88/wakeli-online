@@ -4,16 +4,15 @@ import type { VercelRequest } from '@vercel/node';
  * Composio backend integration helpers.
  *
  * Strategy:
- * - We rely on a single COMPOSIO_API_KEY env var (already configured in Vercel).
- * - Auth configs are created lazily on demand using Composio-managed credentials
- *   (`use_composio_managed_auth: true`), so we DO NOT need per-toolkit OAuth setup.
- * - Auth config ids are cached in-process (per cold start) to avoid hitting the
- *   Composio API on every request.
+ * - Single COMPOSIO_API_KEY env var.
+ * - Auth configs created lazily via use_composio_managed_auth.
+ * - Auth config ids cached in-process.
  */
 
 const COMPOSIO_API_BASE = 'https://backend.composio.dev/api/v3';
 
-// Toolkits we expose in the UI. These map UI ids to Composio toolkit slugs.
+// UI id -> Composio toolkit slug mapping.
+// Some Composio slugs are not the obvious lowercase form; use the official slug.
 export const SUPPORTED_TOOLKITS: Record<string, string> = {
   gmail: 'gmail',
   github: 'github',
@@ -31,14 +30,14 @@ export const SUPPORTED_TOOLKITS: Record<string, string> = {
   asana: 'asana',
   trello: 'trello',
   airtable: 'airtable',
-  zapier: 'zapier',
+  zapier: 'zapier_nla',
   mailchimp: 'mailchimp',
   hubspot: 'hubspot',
   zoom: 'zoom',
   calendly: 'calendly',
   stripe: 'stripe',
   paypal: 'paypal',
-  twilio: 'twilio',
+  twilio: 'twilio_messaging_api',
   sendgrid: 'sendgrid',
   figma: 'figma',
   canva: 'canva',
@@ -49,7 +48,6 @@ export const SUPPORTED_TOOLKITS: Record<string, string> = {
   chatbotkit: 'chatbotkit',
 };
 
-// In-memory cache of auth_config ids per toolkit slug.
 const authConfigCache = new Map<string, string>();
 
 export function getApiKey(): string {
@@ -71,7 +69,7 @@ export function getBaseUrl(req: VercelRequest): string {
 export function normalizeToolkit(input: string | string[] | undefined): string | null {
   const raw = Array.isArray(input) ? input[0] : input;
   if (!raw) return null;
-  const lower = raw.toLowerCase().replace(/[-_\s]/g, '');
+  const lower = String(raw).toLowerCase().replace(/[-_\s]/g, '');
   const aliases: Record<string, string> = {
     googlecalender: 'googlecalendar',
     googlesheet: 'googlesheets',
@@ -84,7 +82,10 @@ export function normalizeToolkit(input: string | string[] | undefined): string |
   return SUPPORTED_TOOLKITS[lower] || null;
 }
 
-async function composioFetch(path: string, init: RequestInit = {}): Promise<{ ok: boolean; status: number; data: any }> {
+async function composioFetch(
+  path: string,
+  init: RequestInit = {},
+): Promise<{ ok: boolean; status: number; data: any }> {
   const apiKey = getApiKey();
   const r = await fetch(`${COMPOSIO_API_BASE}${path}`, {
     ...init,
@@ -115,7 +116,9 @@ export async function getOrCreateAuthConfig(toolkitSlug: string): Promise<string
     return envVal.trim();
   }
 
-  const list = await composioFetch(`/auth_configs?toolkit_slug=${encodeURIComponent(toolkitSlug)}&limit=10`);
+  const list = await composioFetch(
+    `/auth_configs?toolkit_slug=${encodeURIComponent(toolkitSlug)}&limit=10`,
+  );
   if (list.ok && list.data) {
     const items: any[] = Array.isArray(list.data?.items)
       ? list.data.items
@@ -159,10 +162,11 @@ export async function getOrCreateAuthConfig(toolkitSlug: string): Promise<string
     });
     if (!fallback.ok) {
       throw new Error(
-        `AUTH_CONFIG_CREATE_FAILED: ${created.status} ${JSON.stringify(created.data)} | fallback ${fallback.status} ${JSON.stringify(fallback.data)}`,
+        `AUTH_CONFIG_CREATE_FAILED for "${toolkitSlug}": ${created.status} ${JSON.stringify(created.data)}`,
       );
     }
-    const id = fallback.data?.auth_config?.id || fallback.data?.id || fallback.data?.data?.id;
+    const id =
+      fallback.data?.auth_config?.id || fallback.data?.id || fallback.data?.data?.id;
     if (!id) throw new Error('AUTH_CONFIG_CREATE_NO_ID');
     authConfigCache.set(toolkitSlug, id);
     return id;
@@ -180,32 +184,50 @@ export async function initiateConnection(opts: {
   callbackUrl?: string;
 }): Promise<{ redirectUrl: string; connectedAccountId?: string }> {
   const authConfigId = await getOrCreateAuthConfig(opts.toolkitSlug);
+
+  // Do NOT hardcode authScheme; let Composio infer it from auth_config so
+  // OAuth1 toolkits (e.g. Trello) and API-key toolkits also work.
   const body: any = {
     auth_config: { id: authConfigId },
     connection: {
       user_id: opts.userId,
       callback_url: opts.callbackUrl,
-      state: {
-        authScheme: 'OAUTH2',
-        val: { status: 'INITIALIZING', long_redirect_url: true },
-      },
+      state: { val: { status: 'INITIALIZING', long_redirect_url: true } },
     },
   };
+
   const r = await composioFetch('/connected_accounts', {
     method: 'POST',
     body: JSON.stringify(body),
   });
+
   if (!r.ok) {
-    throw new Error(`CONNECTED_ACCOUNT_CREATE_FAILED: ${r.status} ${JSON.stringify(r.data)}`);
+    // Retry with no state shape (some toolkits reject the wrapper)
+    const retry = await composioFetch('/connected_accounts', {
+      method: 'POST',
+      body: JSON.stringify({
+        auth_config: { id: authConfigId },
+        connection: { user_id: opts.userId, callback_url: opts.callbackUrl },
+      }),
+    });
+    if (!retry.ok) {
+      throw new Error(
+        `CONNECTED_ACCOUNT_CREATE_FAILED for "${opts.toolkitSlug}": ${r.status} ${JSON.stringify(r.data)}`,
+      );
+    }
+    Object.assign(r, retry);
   }
+
   const redirectUrl =
     r.data?.redirect_url ||
     r.data?.redirectUrl ||
     r.data?.connectionData?.val?.redirectUrl ||
     r.data?.data?.redirect_url ||
     null;
+
   const connectedAccountId =
     r.data?.id || r.data?.connectedAccountId || r.data?.data?.id || undefined;
+
   if (!redirectUrl) {
     if (connectedAccountId) {
       return { redirectUrl: '', connectedAccountId };
@@ -216,7 +238,9 @@ export async function initiateConnection(opts: {
 }
 
 export async function getUserConnectionStatuses(userId: string): Promise<Record<string, string>> {
-  const r = await composioFetch(`/connected_accounts?user_id=${encodeURIComponent(userId)}&limit=100`);
+  const r = await composioFetch(
+    `/connected_accounts?user_id=${encodeURIComponent(userId)}&limit=100`,
+  );
   const out: Record<string, string> = {};
   if (!r.ok || !r.data) return out;
   const items: any[] = Array.isArray(r.data?.items)
@@ -227,7 +251,13 @@ export async function getUserConnectionStatuses(userId: string): Promise<Record<
     ? r.data
     : [];
   for (const it of items) {
-    const toolkit = (it?.toolkit?.slug || it?.toolkitSlug || it?.toolkit || it?.appName || '')
+    const toolkit = (
+      it?.toolkit?.slug ||
+      it?.toolkitSlug ||
+      it?.toolkit ||
+      it?.appName ||
+      ''
+    )
       .toString()
       .toLowerCase();
     if (!toolkit) continue;
@@ -248,9 +278,10 @@ export async function getUserConnectionStatuses(userId: string): Promise<Record<
 }
 
 export async function disconnectConnectedAccount(connectedAccountId: string): Promise<boolean> {
-  const r = await composioFetch(`/connected_accounts/${encodeURIComponent(connectedAccountId)}`, {
-    method: 'DELETE',
-  });
+  const r = await composioFetch(
+    `/connected_accounts/${encodeURIComponent(connectedAccountId)}`,
+    { method: 'DELETE' },
+  );
   return r.ok;
 }
 
@@ -296,7 +327,9 @@ export async function executeTool(opts: {
 
 export async function listToolkitActions(toolkitSlug: string, query?: string) {
   const q = query ? `&search=${encodeURIComponent(query)}` : '';
-  const r = await composioFetch(`/tools?toolkit_slug=${encodeURIComponent(toolkitSlug)}&limit=50${q}`);
+  const r = await composioFetch(
+    `/tools?toolkit_slug=${encodeURIComponent(toolkitSlug)}&limit=50${q}`,
+  );
   return r;
 }
 
