@@ -1,114 +1,63 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-type ToolkitKey =
-  | 'github'
-  | 'gmail'
-  | 'googlecalendar'
-  | 'googledocs'
-  | 'googledrive'
-  | 'googlesheets'
-  | 'outlook'
-  | 'slack'
-  | 'trello'
-  | 'youtube'
-  | 'supabase'
-  | 'vercel'
-  | 'chatbotkit';
-
-const AUTH_CONFIG_BY_TOOLKIT: Partial<Record<ToolkitKey, string>> = {
-  github: process.env.COMPOSIO_AUTH_CONFIG_GITHUB || '',
-  gmail: process.env.COMPOSIO_AUTH_CONFIG_GMAIL || '',
-  googlecalendar: process.env.COMPOSIO_AUTH_CONFIG_GOOGLECALENDAR || '',
-  googledocs: process.env.COMPOSIO_AUTH_CONFIG_GOOGLEDOCS || '',
-  googledrive: process.env.COMPOSIO_AUTH_CONFIG_GOOGLEDRIVE || '',
-  googlesheets: process.env.COMPOSIO_AUTH_CONFIG_GOOGLESHEETS || '',
-  outlook: process.env.COMPOSIO_AUTH_CONFIG_OUTLOOK || '',
-  slack: process.env.COMPOSIO_AUTH_CONFIG_SLACK || '',
-  trello: process.env.COMPOSIO_AUTH_CONFIG_TRELLO || '',
-  youtube: process.env.COMPOSIO_AUTH_CONFIG_YOUTUBE || '',
-  supabase: process.env.COMPOSIO_AUTH_CONFIG_SUPABASE || '',
-  vercel: process.env.COMPOSIO_AUTH_CONFIG_VERCEL || '',
-  chatbotkit: process.env.COMPOSIO_AUTH_CONFIG_CHATBOTKIT || '',
-};
-
-function getBaseUrl(req: VercelRequest) {
-  const proto = (req.headers['x-forwarded-proto'] as string) || 'https';
-  const host = (req.headers['x-forwarded-host'] as string) || (req.headers.host as string);
-  return `${proto}://${host}`;
-}
+import {
+  getBaseUrl,
+  initiateConnection,
+  normalizeToolkit,
+  setCorsHeaders,
+} from './_helpers';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  setCorsHeaders(res);
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   try {
-    if (req.method !== 'GET') {
+    if (req.method !== 'GET' && req.method !== 'POST') {
       res.status(405).json({ error: 'METHOD_NOT_ALLOWED' });
       return;
     }
 
-    const apiKey = process.env.COMPOSIO_API_KEY;
-    if (!apiKey) {
-      res.status(500).json({ error: 'MISSING_COMPOSIO_API_KEY' });
-      return;
-    }
+    const params: any = req.method === 'POST' ? (req.body || {}) : (req.query || {});
+    const rawToolkit = params.toolkit ?? params.toolkit_slug ?? params.app ?? params.slug;
+    const rawUserId =
+      params.user_id ??
+      params.userId ??
+      params.uid ??
+      (req.headers['x-user-id'] as string) ??
+      'guest';
 
-    const toolkit = (req.query.toolkit as string | undefined)?.toLowerCase() as ToolkitKey | undefined;
+    const toolkit = normalizeToolkit(rawToolkit);
     if (!toolkit) {
-      res.status(400).json({ error: 'MISSING_TOOLKIT' });
+      res.status(400).json({
+        error: 'UNSUPPORTED_TOOLKIT',
+        message: `Toolkit "${rawToolkit}" is not supported`,
+      });
       return;
     }
 
-    const authConfigId = AUTH_CONFIG_BY_TOOLKIT[toolkit];
-    if (!authConfigId) {
-      res.status(400).json({ error: 'MISSING_AUTH_CONFIG_FOR_TOOLKIT', toolkit });
-      return;
-    }
-
-    const userId = (req.query.user_id as string | undefined) || (req.query.userId as string | undefined) || 'guest';
-
+    const userId = String(rawUserId || 'guest');
     const baseUrl = getBaseUrl(req);
-    const callbackUrl = `${baseUrl}/#/integrations/callback?toolkit=${encodeURIComponent(toolkit)}`;
+    const callbackUrl = `${baseUrl}/api/composio/callback?toolkit=${encodeURIComponent(toolkit)}&user_id=${encodeURIComponent(userId)}`;
 
-    // NOTE:
-    // - For OAuth2 toolkits, Composio will return a redirect URL to complete auth.
-    // - For API key toolkits, Composio may require credentials. In that case, this endpoint will fail and the UI should show an error.
-    const body = {
-      auth_config: { id: authConfigId },
-      connection: {
-        user_id: userId,
-        callback_url: callbackUrl,
-        state: {
-          authScheme: 'OAUTH2',
-          val: {
-            status: 'INITIALIZING',
-            long_redirect_url: true,
-          },
-        },
-      },
-    };
-
-    const r = await fetch('https://backend.composio.dev/api/v3.1/connected_accounts', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey,
-      },
-      body: JSON.stringify(body),
+    const result = await initiateConnection({
+      toolkitSlug: toolkit,
+      userId,
+      callbackUrl,
     });
 
-    const data = await r.json().catch(() => ({}));
-
-    if (!r.ok) {
-      res.status(500).json({ error: 'COMPOSIO_CREATE_CONNECTED_ACCOUNT_FAILED', status: r.status, data });
-      return;
-    }
-
-    const redirectUrl = (data && (data.redirect_url || data.redirectUrl || data.connectionData?.val?.redirectUrl)) as string | undefined;
-    if (!redirectUrl) {
-      res.status(500).json({ error: 'MISSING_REDIRECT_URL', data });
-      return;
-    }
-
-    res.status(200).json({ redirect_url: redirectUrl });
+    res.status(200).json({
+      redirect_url: result.redirectUrl,
+      connected_account_id: result.connectedAccountId,
+      toolkit,
+      user_id: userId,
+    });
   } catch (e: any) {
-    res.status(500).json({ error: 'SERVER_ERROR', message: e?.message || String(e) });
+    res.status(500).json({
+      error: 'COMPOSIO_CONNECT_FAILED',
+      message: e?.message || String(e),
+    });
   }
 }
