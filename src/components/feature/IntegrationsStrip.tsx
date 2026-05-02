@@ -59,8 +59,8 @@ const IntegrationsStrip = () => {
                   <div className="py-12 bg-white overflow-hidden">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                                 <div className="text-center mb-12">
-                                          <h2 className="text-3xl font-bold text-gray-900">{t('integrations.title')}</h2>h2>
-                                          <p className="mt-4 text-lg text-gray-600">{t('integrations.subtitle')}</p>p>
+                                          <h2 className="text-3xl font-bold text-gray-900">{t('integrations.title')}</h2>
+                                          <p className="mt-4 text-lg text-gray-600">{t('integrations.subtitle')}</p>
                                 </div>div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                                       {allTools.map((tool) => (
@@ -75,13 +75,12 @@ const IntegrationsStrip = () => {
                                                                         style={{ backgroundColor: tool.color }}
                                                                       >
                                                                   <i className={tool.icon}></i>i>
-                                                  </div>div>
+                                                  </div>
                                                   <span className="text-sm font-medium text-gray-900 text-center">{tool.name}</span>span>
                                                   <span className="text-xs text-gray-500 mt-2">
                                                         {loading === tool.slug ? 'جاري...' : 'Connect'}
-                                                  </span>span>
-                                    </button>button>
-                                  ))}
+                                                  </span
+                                    </button>                                  ))}
                                 </div>div>
                         </div>div>
                   </div>div>
