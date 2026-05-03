@@ -10,12 +10,12 @@ import CalendlySection from './components/CalendlySection';
 import AIMeetingModal from './components/AIMeetingModal';
 import AccountConnectionsSection from './components/AccountConnectionsSection';
 import AgentTemplatesSection from './components/AgentTemplatesSection';
-import { useSEO, getWebsiteSchema, getOrganizationSchema, getSoftwareApplicationSchema, getFAQSchema, getWebPageSchema } from '@/utils/seo';
-import { useAuth } from '@/contexts/AuthContext';
-import AuthModal from '@/components/feature/AuthModal';
+import { useSEO, getWebsiteSchema, getOrganizationSchema, getSoftwareApplicationSchema, getFAQSchema, getWebPageSchema } from '../../utils/seo';
+import { useAuth } from '../../contexts/AuthContext';
+import AuthModal from '../../components/feature/AuthModal';
 import PartnerStrip from './components/PartnerStrip';
 import MobileView from './components/MobileView';
-import { useDeviceDetection } from '@/hooks/useDeviceDetection';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 
 interface ThemeContextType {
   isDark: boolean;
