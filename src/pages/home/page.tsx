@@ -1,5 +1,7 @@
 import { useState, createContext, useContext, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
+// استيراد المكونات باستخدام مسارات نسبية مباشرة لضمان الاستقرار
 import CodeHero from './components/CodeHero';
 import AgentsGrid from './components/AgentsGrid';
 import AgentDetailModal from './components/AgentDetailModal';
@@ -12,7 +14,11 @@ import AccountConnectionsSection from './components/AccountConnectionsSection';
 import AgentTemplatesSection from './components/AgentTemplatesSection';
 import PartnerStrip from './components/PartnerStrip';
 import MobileView from './components/MobileView';
-import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+
+// استيراد الهوكس والسياقات مع محاولة المسارات الأكثر شيوعاً
+import { useAuth } from '../../../contexts/AuthContext';
+import AuthModal from '../../../components/feature/AuthModal';
+import { useDeviceDetection } from '../../../hooks/useDeviceDetection';
 
 interface ThemeContextType {
   isDark: boolean;
