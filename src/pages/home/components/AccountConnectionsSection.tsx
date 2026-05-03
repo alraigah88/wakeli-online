@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../page';
 import AppConnectionModal from './AppConnectionModal';
@@ -10,11 +10,8 @@ interface AppConnection {
   id: string;
   name: string;
   logoUrl: string;
-  color: string;
-  isConnected: boolean;
+  category: string;
   status: 'available' | 'coming-soon';
-  description: string;
-  descriptionAr: string;
 }
 
 export default function AccountConnectionsSection() {
@@ -24,45 +21,57 @@ export default function AccountConnectionsSection() {
   const { userStatusByKey, setStatus } = useIntegrations(user?.id);
   const isRTL = i18n.language === 'ar';
   const [selectedApp, setSelectedApp] = useState<AppConnection | null>(null);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [showAllApps, setShowAllApps] = useState(false);
 
-  const apps = useMemo<AppConnection[]>(() => [
-    { id: 'gmail', name: 'Gmail', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg', color: '#EA4335', status: 'available', isConnected: userStatusByKey['google_gmail'] === 'connected', description: 'Email automation', descriptionAr: 'أتمتة البريد الإلكتروني' },
-    { id: 'google-calendar', name: 'Google Calendar', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg', color: '#4285F4', status: 'available', isConnected: userStatusByKey['google_calendar'] === 'connected', description: 'Schedule automation', descriptionAr: 'أتمتة المواعيد' },
-    { id: 'notion', name: 'Notion', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png', color: '#000000', status: 'available', isConnected: userStatusByKey['notion'] === 'connected', description: 'Workspace automation', descriptionAr: 'أتمتة مساحة العمل' },
-    { id: 'slack', name: 'Slack', logoUrl: 'https://a.slack-edge.com/80588/marketing/img/meta/slack_hash_256.png', color: '#4A154B', status: 'available', isConnected: userStatusByKey['slack'] === 'connected', description: 'Team communication', descriptionAr: 'تواصل الفريق' },
-    { id: 'discord', name: 'Discord', logoUrl: 'https://assets-global.website-files.com/6257adef93467e05d00d957d/6257adef93467e05d00d95a0_Discord-Logo%2BWordmark-Color.png', color: '#5865F2', status: 'available', isConnected: userStatusByKey['discord'] === 'connected', description: 'Community automation', descriptionAr: 'أتمتة المجتمع' },
-    { id: 'telegram', name: 'Telegram', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg', color: '#0088cc', status: 'available', isConnected: userStatusByKey['telegram'] === 'connected', description: 'Messaging automation', descriptionAr: 'أتمتة المراسلة' },
-    { id: 'whatsapp', name: 'WhatsApp', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg', color: '#25D366', status: 'available', isConnected: userStatusByKey['whatsapp'] === 'connected', description: 'Messaging automation', descriptionAr: 'أتمتة المراسلة' },
-    { id: 'github', name: 'GitHub', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg', color: '#181717', status: 'available', isConnected: userStatusByKey['github'] === 'connected', description: 'Code automation', descriptionAr: 'أتمتة الكود' },
-    { id: 'trello', name: 'Trello', logoUrl: 'https://cdn.worldvectorlogo.com/logos/trello.svg', color: '#0052CC', status: 'available', isConnected: userStatusByKey['trello'] === 'connected', description: 'Project management', descriptionAr: 'إدارة المشاريع' },
-    { id: 'asana', name: 'Asana', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Asana_logo.svg', color: '#F06560', status: 'available', isConnected: userStatusByKey['asana'] === 'connected', description: 'Task management', descriptionAr: 'إدارة المهام' },
-    { id: 'zoom', name: 'Zoom', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/94/Zoom_Video_Communications_logo.svg', color: '#2D8CFF', status: 'available', isConnected: userStatusByKey['zoom'] === 'connected', description: 'Video conferencing', descriptionAr: 'اجتماعات الفيديو' },
-    { id: 'google-drive', name: 'Google Drive', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg', color: '#34A853', status: 'available', isConnected: userStatusByKey['google_drive'] === 'connected', description: 'File storage', descriptionAr: 'تخزين الملفات' },
-    { id: 'google-sheets', name: 'Google Sheets', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg', color: '#0F9D58', status: 'available', isConnected: userStatusByKey['google_sheets'] === 'connected', description: 'Spreadsheet automation', descriptionAr: 'أتمتة الجداول' },
-    { id: 'google-docs', name: 'Google Docs', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Google_Docs_logo_%282014-2020%29.svg', color: '#4285F4', status: 'available', isConnected: userStatusByKey['google_docs'] === 'connected', description: 'Document automation', descriptionAr: 'أتمتة المستندات' },
-    { id: 'dropbox', name: 'Dropbox', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg', color: '#0061FF', status: 'available', isConnected: userStatusByKey['dropbox'] === 'connected', description: 'Cloud storage', descriptionAr: 'تخزين سحابي' },
-    { id: 'figma', name: 'Figma', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg', color: '#F24E1E', status: 'available', isConnected: userStatusByKey['figma'] === 'connected', description: 'Design automation', descriptionAr: 'أتمتة التصميم' },
-    { id: 'hubspot', name: 'HubSpot', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/HubSpot_Logo.svg', color: '#FF7A59', status: 'available', isConnected: userStatusByKey['hubspot'] === 'connected', description: 'CRM automation', descriptionAr: 'أتمتة CRM' },
-    { id: 'salesforce', name: 'Salesforce', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Salesforce.com_logo.svg', color: '#00A1E0', status: 'available', isConnected: userStatusByKey['salesforce'] === 'connected', description: 'Sales automation', descriptionAr: 'أتمتة المبيعات' },
-    { id: 'jira', name: 'Jira', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Jira_Logo.svg', color: '#0052CC', status: 'available', isConnected: userStatusByKey['jira'] === 'connected', description: 'Issue tracking', descriptionAr: 'تتبع المشكلات' },
-    { id: 'linear', name: 'Linear', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Linear_logo.svg', color: '#5E6AD2', status: 'available', isConnected: userStatusByKey['linear'] === 'connected', description: 'Issue tracking', descriptionAr: 'تتبع المشكلات' },
-    { id: 'clickup', name: 'ClickUp', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a3/ClickUp_logo.svg', color: '#7B68EE', status: 'available', isConnected: userStatusByKey['clickup'] === 'connected', description: 'Task management', descriptionAr: 'إدارة المهام' },
-    { id: 'monday', name: 'Monday.com', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Monday_logo.svg', color: '#FF3D57', status: 'available', isConnected: userStatusByKey['monday'] === 'connected', description: 'Project management', descriptionAr: 'إدارة المشاريع' },
-    { id: 'todoist', name: 'Todoist', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6d/Todoist_logo.png', color: '#E44332', status: 'available', isConnected: userStatusByKey['todoist'] === 'connected', description: 'Task management', descriptionAr: 'إدارة المهام' },
-    { id: 'airtable', name: 'Airtable', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Airtable_Logo.svg', color: '#18BFFF', status: 'available', isConnected: userStatusByKey['airtable'] === 'connected', description: 'Database automation', descriptionAr: 'أتمتة القواعد' },
-    { id: 'calendly', name: 'Calendly', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Calendly_logo.svg', color: '#006BFF', status: 'available', isConnected: userStatusByKey['calendly'] === 'connected', description: 'Schedule automation', descriptionAr: 'أتمتة المواعيد' },
-    { id: 'intercom', name: 'Intercom', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Intercom_logo.svg', color: '#000000', status: 'available', isConnected: userStatusByKey['intercom'] === 'connected', description: 'Customer support', descriptionAr: 'دعم العملاء' },
-    { id: 'zendesk', name: 'Zendesk', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Zendesk_logo.svg', color: '#03363D', status: 'available', isConnected: userStatusByKey['zendesk'] === 'connected', description: 'Customer support', descriptionAr: 'دعم العملاء' },
-    { id: 'mailchimp', name: 'Mailchimp', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Mailchimp_logo.svg', color: '#FFE01B', status: 'available', isConnected: userStatusByKey['mailchimp'] === 'connected', description: 'Email marketing', descriptionAr: 'تسويق البريد' },
-    { id: 'stripe', name: 'Stripe', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg', color: '#635BFF', status: 'available', isConnected: userStatusByKey['stripe'] === 'connected', description: 'Payment automation', descriptionAr: 'أتمتة المدفوعات' },
-    { id: 'shopify', name: 'Shopify', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Shopify_logo_2018.svg', color: '#96BF48', status: 'available', isConnected: userStatusByKey['shopify'] === 'connected', description: 'E-commerce automation', descriptionAr: 'أتمتة التجارة' },
-  ], [userStatusByKey]);
+  const categories = [
+    { id: 'all', nameAr: 'جميع التطبيقات', nameEn: 'All Apps' },
+    { id: 'productivity', nameAr: 'الإنتاجية', nameEn: 'Productivity' },
+    { id: 'communication', nameAr: 'التواصل', nameEn: 'Communication' },
+    { id: 'marketing', nameAr: 'التسويق', nameEn: 'Marketing' },
+    { id: 'technical', nameAr: 'التقني', nameEn: 'Technical' },
+    { id: 'finance', nameAr: 'المالي', nameEn: 'Finance' },
+  ];
+
+  const allApps = useMemo<AppConnection[]>(() => [
+    { id: 'gmail', name: 'Gmail', category: 'communication', logoUrl: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_48dp.png', status: 'available' },
+    { id: 'google-calendar', name: 'Google Calendar', category: 'productivity', logoUrl: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_48dp.png', status: 'available' },
+    { id: 'notion', name: 'Notion', category: 'productivity', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png', status: 'available' },
+    { id: 'slack', name: 'Slack', category: 'communication', logoUrl: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg', status: 'available' },
+    { id: 'discord', name: 'Discord', category: 'communication', logoUrl: 'https://cdn.worldvectorlogo.com/logos/discord-6.svg', status: 'available' },
+    { id: 'telegram', name: 'Telegram', category: 'communication', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg', status: 'available' },
+    { id: 'whatsapp', name: 'WhatsApp', category: 'communication', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg', status: 'available' },
+    { id: 'github', name: 'GitHub', category: 'technical', logoUrl: 'https://cdn.worldvectorlogo.com/logos/github-icon-1.svg', status: 'available' },
+    { id: 'trello', name: 'Trello', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/trello.svg', status: 'available' },
+    { id: 'asana', name: 'Asana', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/asana-1.svg', status: 'available' },
+    { id: 'zoom', name: 'Zoom', category: 'communication', logoUrl: 'https://cdn.worldvectorlogo.com/logos/zoom-communications-logo.svg', status: 'available' },
+    { id: 'google-drive', name: 'Google Drive', category: 'productivity', logoUrl: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png', status: 'available' },
+    { id: 'google-sheets', name: 'Google Sheets', category: 'productivity', logoUrl: 'https://www.gstatic.com/images/branding/product/2x/sheets_2020q4_48dp.png', status: 'available' },
+    { id: 'google-docs', name: 'Google Docs', category: 'productivity', logoUrl: 'https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png', status: 'available' },
+    { id: 'dropbox', name: 'Dropbox', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/dropbox-1.svg', status: 'available' },
+    { id: 'figma', name: 'Figma', category: 'technical', logoUrl: 'https://cdn.worldvectorlogo.com/logos/figma-1.svg', status: 'available' },
+    { id: 'hubspot', name: 'HubSpot', category: 'marketing', logoUrl: 'https://cdn.worldvectorlogo.com/logos/hubspot.svg', status: 'available' },
+    { id: 'salesforce', name: 'Salesforce', category: 'marketing', logoUrl: 'https://cdn.worldvectorlogo.com/logos/salesforce-2.svg', status: 'available' },
+    { id: 'jira', name: 'Jira', category: 'technical', logoUrl: 'https://cdn.worldvectorlogo.com/logos/jira-1.svg', status: 'available' },
+    { id: 'linear', name: 'Linear', category: 'technical', logoUrl: 'https://cdn.worldvectorlogo.com/logos/linear-1.svg', status: 'available' },
+    { id: 'clickup', name: 'ClickUp', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/clickup.svg', status: 'available' },
+    { id: 'monday', name: 'Monday', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/monday-1.svg', status: 'available' },
+    { id: 'todoist', name: 'Todoist', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/todoist-2.svg', status: 'available' },
+    { id: 'airtable', name: 'Airtable', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/airtable.svg', status: 'available' },
+    { id: 'calendly', name: 'Calendly', category: 'productivity', logoUrl: 'https://cdn.worldvectorlogo.com/logos/calendly.svg', status: 'available' },
+    { id: 'stripe', name: 'Stripe', category: 'finance', logoUrl: 'https://cdn.worldvectorlogo.com/logos/stripe-4.svg', status: 'available' },
+    { id: 'shopify', name: 'Shopify', category: 'marketing', logoUrl: 'https://cdn.worldvectorlogo.com/logos/shopify.svg', status: 'available' },
+    { id: 'paypal', name: 'PayPal', category: 'finance', logoUrl: 'https://cdn.worldvectorlogo.com/logos/paypal-3.svg', status: 'available' },
+    { id: 'quickbooks', name: 'QuickBooks', category: 'finance', logoUrl: 'https://cdn.worldvectorlogo.com/logos/quickbooks-1.svg', status: 'available' },
+    { id: 'xero', name: 'Xero', category: 'finance', logoUrl: 'https://cdn.worldvectorlogo.com/logos/xero.svg', status: 'available' },
+  ], []);
+
+  const filteredApps = useMemo(() => {
+    if (activeCategory === 'all') return allApps;
+    return allApps.filter(app => app.category === activeCategory);
+  }, [activeCategory, allApps]);
 
   const handleConnect = async (app: AppConnection) => {
-    if (app.isConnected) {
-      await setStatus(app.id, 'disconnected');
-      return;
-    }
     try {
       const toolkitId = app.id.replace(/-/g, '');
       const response = await fetch(`/api/composio/connect?toolkit=${toolkitId}&userId=${user?.id || 'guest'}`);
@@ -91,29 +100,61 @@ export default function AccountConnectionsSection() {
           <p className={`text-lg mb-10 max-w-3xl mx-auto ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             {isRTL ? 'اربط تطبيقاتك المفضلة ودع الوكلاء يديرون مهامك تلقائياً' : 'Connect your favorite apps and let agents manage your tasks automatically'}
           </p>
+          
+          {/* Categories Filter */}
           <div className="flex flex-wrap justify-center gap-2 mb-12">
-            <button className="px-5 py-2 rounded-full font-medium bg-teal-500 text-white shadow-md shadow-teal-200/50">{isRTL ? 'جميع التطبيقات' : 'All Apps'}</button>
-            {['الإنتاجية', 'التواصل', 'التسويق', 'التقني', 'المالي'].map((cat, idx) => (
-              <button key={idx} className={`px-5 py-2 rounded-full font-medium transition-all ${isDark ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-100'}`}>{cat}</button>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-5 py-2 rounded-full font-medium transition-all ${
+                  activeCategory === cat.id
+                    ? 'bg-teal-500 text-white shadow-md shadow-teal-200/50'
+                    : isDark ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-100'
+                }`}
+              >
+                {isRTL ? cat.nameAr : cat.nameEn}
+              </button>
             ))}
           </div>
         </div>
 
+        {/* Apps Grid */}
         <div className="flex flex-wrap justify-center gap-3 mb-16 max-w-5xl mx-auto">
-          <div className={`w-14 h-14 rounded-xl flex items-center justify-center font-medium text-sm transition-all border-2 border-dashed ${isDark ? 'bg-gray-800 border-gray-700 text-gray-500' : 'bg-white border-gray-200 text-gray-400'}`}>+ 15</div>
-          {apps.map((app) => (
-            <motion.button
-              key={app.id}
-              whileHover={{ scale: 1.1, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedApp(app)}
-              className={`relative w-14 h-14 rounded-xl flex items-center justify-center p-3 transition-all shadow-sm ${isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:shadow-md'} ${app.isConnected ? 'ring-2 ring-teal-400' : ''}`}
-            >
-              <img src={app.logoUrl} alt={app.name} className="w-full h-full object-contain" />
-            </motion.button>
-          ))}
+          <AnimatePresence mode="popLayout">
+            {filteredApps.map((app) => (
+              <motion.button
+                key={app.id}
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedApp(app)}
+                className={`relative w-14 h-14 rounded-xl flex items-center justify-center p-3 transition-all shadow-sm ${
+                  isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:shadow-md'
+                }`}
+              >
+                <img src={app.logoUrl} alt={app.name} className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/124/124010.png'; }} />
+              </motion.button>
+            ))}
+            {activeCategory === 'all' && (
+              <motion.button
+                layout
+                whileHover={{ scale: 1.1 }}
+                onClick={() => setShowAllApps(true)}
+                className={`w-14 h-14 rounded-xl flex items-center justify-center font-medium text-sm transition-all border-2 border-dashed ${
+                  isDark ? 'bg-gray-800 border-gray-700 text-gray-500' : 'bg-white border-gray-200 text-gray-400'
+                }`}
+              >
+                + 15
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
+        {/* Info Box */}
         <div className={`rounded-2xl p-8 shadow-sm border ${isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-100'} max-w-4xl mx-auto`}>
           <div className="flex items-start gap-4">
             <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
@@ -129,6 +170,7 @@ export default function AccountConnectionsSection() {
         </div>
       </div>
 
+      {/* Connection Modal */}
       {selectedApp && (
         <AppConnectionModal
           app={{
