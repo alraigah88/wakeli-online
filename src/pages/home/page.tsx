@@ -196,7 +196,7 @@ export default function HomePage() {
           <PartnerStrip />
           <AgentsGrid customAgents={customAgents} onAgentSelect={setSelectedAgent} onCreateAgent={() => { setEditingAgent(null); setShowCreateModal(true); }} onEditAgent={handleEditAgent} onDeleteAgent={handleDeleteAgent} />
           
-          {/* Unified Integration Section - ONLY ONE CALL HERE */}
+          {/* Unified Integration Section */}
           <AccountConnectionsSection />
           
           <PricingSection onSelectPackage={handlePackageSelect} />
