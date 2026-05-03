@@ -1,5 +1,3 @@
-
-page_FIXED.tsx
 import { useEffect, useState, createContext, useContext, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import CodeHero from './components/CodeHero';
@@ -8,7 +6,6 @@ import AgentDetailModal from './components/AgentDetailModal';
 import CreateAgentModal from './components/CreateAgentModal';
 import PricingSection from './components/PricingSection';
 import ReviewsSection from './components/ReviewsSection';
-import IntegrationsStrip from '@/components/feature/IntegrationsStrip';
 import CalendlySection from './components/CalendlySection';
 import AIMeetingModal from './components/AIMeetingModal';
 import AccountConnectionsSection from './components/AccountConnectionsSection';
@@ -199,7 +196,7 @@ export default function HomePage() {
           <PartnerStrip />
           <AgentsGrid customAgents={customAgents} onAgentSelect={setSelectedAgent} onCreateAgent={() => { setEditingAgent(null); setShowCreateModal(true); }} onEditAgent={handleEditAgent} onDeleteAgent={handleDeleteAgent} />
           
-          {/* Unified Integration Section */}
+          {/* Unified Integration Section - ONLY ONE CALL HERE */}
           <AccountConnectionsSection />
           
           <PricingSection onSelectPackage={handlePackageSelect} />
