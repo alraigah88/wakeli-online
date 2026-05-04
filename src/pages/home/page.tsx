@@ -1,22 +1,21 @@
-import { useState, createContext, useContext, useLayoutEffect } from 'react';
+import { useState, createContext, useContext, useLayoutEffect, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 
-// Standard imports - assuming components are in the same directory structure
-import CodeHero from './components/CodeHero';
-import AgentsGrid from './components/AgentsGrid';
-import AgentDetailModal from './components/AgentDetailModal';
-import CreateAgentModal from './components/CreateAgentModal';
-import PricingSection from './components/PricingSection';
-import ReviewsSection from './components/ReviewsSection';
-import CalendlySection from './components/CalendlySection';
-import AIMeetingModal from './components/AIMeetingModal';
-import AccountConnectionsSection from './components/AccountConnectionsSection';
-import AgentTemplatesSection from './components/AgentTemplatesSection';
-import PartnerStrip from './components/PartnerStrip';
-import MobileView from './components/MobileView';
+// Lazy load components with Error Boundary or simple fallback
+const CodeHero = lazy(() => import('./components/CodeHero'));
+const AgentsGrid = lazy(() => import('./components/AgentsGrid'));
+const AgentDetailModal = lazy(() => import('./components/AgentDetailModal'));
+const CreateAgentModal = lazy(() => import('./components/CreateAgentModal'));
+const PricingSection = lazy(() => import('./components/PricingSection'));
+const ReviewsSection = lazy(() => import('./components/ReviewsSection'));
+const CalendlySection = lazy(() => import('./components/CalendlySection'));
+const AIMeetingModal = lazy(() => import('./components/AIMeetingModal'));
+const AccountConnectionsSection = lazy(() => import('./components/AccountConnectionsSection'));
+const AgentTemplatesSection = lazy(() => import('./components/AgentTemplatesSection'));
+const PartnerStrip = lazy(() => import('./components/PartnerStrip'));
 
 // Hooks and Contexts
-import { useAuth } from '../../contexts/AuthContext';
+import { AuthProvider } from '../../contexts/AuthContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 
 interface ThemeContextType {
@@ -63,35 +62,33 @@ export default function HomePage() {
     }
   };
 
-  if (isMobile) {
-    return <MobileView />;
-  }
-
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme, hoverGender, setHoverGender }}>
       <main className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
-        <CodeHero onMeetingClick={() => setIsMeetingModalOpen(true)} />
-        
-        <div className="relative z-10">
-          <AgentsGrid onAgentClick={setSelectedAgent} onCreateClick={() => setIsCreateModalOpen(true)} />
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <CodeHero onMeetingClick={() => setIsMeetingModalOpen(true)} />
           
-          <div className="py-10">
-            <AccountConnectionsSection />
+          <div className="relative z-10">
+            <AgentsGrid onAgentClick={setSelectedAgent} onCreateClick={() => setIsCreateModalOpen(true)} />
+            
+            <div className="py-10">
+              <AccountConnectionsSection />
+            </div>
+
+            <div className="py-10">
+              <AgentTemplatesSection />
+            </div>
+
+            <PartnerStrip />
+            <PricingSection />
+            <ReviewsSection />
+            <CalendlySection />
           </div>
 
-          <div className="py-10">
-            <AgentTemplatesSection />
-          </div>
-
-          <PartnerStrip />
-          <PricingSection />
-          <ReviewsSection />
-          <CalendlySection />
-        </div>
-
-        <CreateAgentModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
-        <AgentDetailModal agent={selectedAgent} isOpen={!!selectedAgent} onClose={() => setSelectedAgent(null)} />
-        <AIMeetingModal isOpen={isMeetingModalOpen} onClose={() => setIsMeetingModalOpen(false)} />
+          <CreateAgentModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+          <AgentDetailModal agent={selectedAgent} isOpen={!!selectedAgent} onClose={() => setSelectedAgent(null)} />
+          <AIMeetingModal isOpen={isMeetingModalOpen} onClose={() => setIsMeetingModalOpen(false)} />
+        </Suspense>
       </main>
     </ThemeContext.Provider>
   );
