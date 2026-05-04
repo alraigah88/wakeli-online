@@ -1,25 +1,19 @@
-import { BrowserRouter } from 'react-router-dom';
-import { AppRoutes } from './router';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/home/page';
+import NotFound from './pages/NotFound';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { AuthProvider } from './contexts/AuthContext';
-import { useLayoutEffect } from 'react';
 
 function App() {
-  useLayoutEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, []);
-
   return (
     <I18nextProvider i18n={i18n}>
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </AuthProvider>
     </I18nextProvider>
