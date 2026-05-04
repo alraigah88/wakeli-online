@@ -1,8 +1,6 @@
-import { lazy } from 'react';
+import HomePage from '../pages/home/page';
+import NotFound from '../pages/NotFound';
 import { RouteObject } from 'react-router-dom';
-
-const HomePage = lazy(() => import('../pages/home/page'));
-const NotFound = lazy(() => import('../pages/NotFound'));
 
 const routes: RouteObject[] = [
   {
