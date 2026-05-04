@@ -112,7 +112,7 @@ export default function HomePage() {
             <PartnerStrip />
             <PricingSection />
             <ReviewsSection />
-            <CalendlySection />
+            <CalendlySection onMeetingClick={() => setIsMeetingModalOpen(true)} />
           </div>
 
           {isCreateModalOpen && (
