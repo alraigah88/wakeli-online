@@ -1,127 +1,103 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../page';
 
-interface Template {
-  id: string;
-  titleAr: string;
-  titleEn: string;
-  descriptionAr: string;
-  descriptionEn: string;
-  tools: string[];
-}
+const templates = [
+  {
+    id: 'seo-expert',
+    titleAr: 'خبير تحسين محركات البحث',
+    titleEn: 'SEO Expert',
+    descAr: 'أتمتة تحليل الكلمات المفتاحية وبناء الروابط.',
+    descEn: 'Automate keyword analysis and link building.',
+    icon: 'ri-search-line',
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'code-reviewer',
+    titleAr: 'مراجع الكود الذكي',
+    titleEn: 'Smart Code Reviewer',
+    descAr: 'فحص الأخطاء البرمجية واقتراح التحسينات.',
+    descEn: 'Check code errors and suggest improvements.',
+    icon: 'ri-code-s-slash-line',
+    color: 'bg-green-500'
+  },
+  {
+    id: 'social-growth',
+    titleAr: 'مدير نمو التواصل',
+    titleEn: 'Social Growth Manager',
+    descAr: 'جدولة المنشورات وتحليل التفاعل تلقائياً.',
+    descEn: 'Schedule posts and analyze engagement automatically.',
+    icon: 'ri-share-line',
+    color: 'bg-pink-500'
+  },
+  {
+    id: 'tax-planner',
+    titleAr: 'مخطط الضرائب',
+    titleEn: 'Tax Planner',
+    descAr: 'حساب الضرائب وتقديم تقارير مالية دقيقة.',
+    descEn: 'Calculate taxes and provide accurate financial reports.',
+    icon: 'ri-calculator-line',
+    color: 'bg-yellow-500'
+  },
+  {
+    id: 'customer-support',
+    titleAr: 'دعم العملاء الآلي',
+    titleEn: 'Automated Customer Support',
+    descAr: 'الرد على استفسارات العملاء على مدار الساعة.',
+    descEn: 'Respond to customer inquiries 24/7.',
+    icon: 'ri-customer-service-2-line',
+    color: 'bg-purple-500'
+  },
+  {
+    id: 'data-visualizer',
+    titleAr: 'مصور البيانات',
+    titleEn: 'Data Visualizer',
+    descAr: 'تحويل البيانات الخام إلى رسوم بيانية تفاعلية.',
+    descEn: 'Transform raw data into interactive charts.',
+    icon: 'ri-bar-chart-line',
+    color: 'bg-red-500'
+  }
+];
 
 export default function AgentTemplatesSection() {
-  const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const templates: Template[] = [
-    {
-      id: 'email-assistant',
-      titleAr: 'مساعد البريد الذكي',
-      titleEn: 'Smart Email Assistant',
-      descriptionAr: 'يقوم بفرز رسائل Gmail، وتلخيصها، واقتراح ردود احترافية تلقائياً.',
-      descriptionEn: 'Sorts Gmail messages, summarizes them, and suggests professional replies automatically.',
-      tools: ['https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_48dp.png', 'https://cdn.worldvectorlogo.com/logos/openai-2.svg']
-    },
-    {
-      id: 'meeting-summarizer',
-      titleAr: 'ملخص الاجتماعات',
-      titleEn: 'Meeting Summarizer',
-      descriptionAr: 'يسحب تسجيلات Zoom، يحولها لنص، ويرسل ملخصاً لأهم القرارات عبر Slack.',
-      descriptionEn: 'Pulls Zoom recordings, transcribes them, and sends a summary of key decisions via Slack.',
-      tools: ['https://cdn.worldvectorlogo.com/logos/zoom-communications-logo.svg', 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg']
-    },
-    {
-      id: 'task-manager',
-      titleAr: 'منظم المهام التلقائي',
-      titleEn: 'Auto Task Manager',
-      descriptionAr: 'يستخرج المهام من محادثات Discord ويضيفها مباشرة إلى Notion أو Trello.',
-      descriptionEn: 'Extracts tasks from Discord chats and adds them directly to Notion or Trello.',
-      tools: ['https://cdn.worldvectorlogo.com/logos/discord-6.svg', 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png']
-    },
-    {
-      id: 'social-media-bot',
-      titleAr: 'مدير التواصل الاجتماعي',
-      titleEn: 'Social Media Manager',
-      descriptionAr: 'ينشئ محتوى تسويقي بناءً على ملفات Google Docs وينشره في المواعيد المحددة.',
-      descriptionEn: 'Creates marketing content based on Google Docs and schedules posts.',
-      tools: ['https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png', 'https://cdn.worldvectorlogo.com/logos/figma-1.svg']
-    },
-    {
-      id: 'research-agent',
-      titleAr: 'الباحث العميق',
-      titleEn: 'Deep Researcher',
-      descriptionAr: 'يجري أبحاثاً متعددة الخطوات على الويب مع ترتيب المصادر والاستشهادات في ملف PDF.',
-      descriptionEn: 'Conducts multi-step web research with sources and citations in a PDF file.',
-      tools: ['https://cdn.worldvectorlogo.com/logos/google-icon.svg', 'https://cdn.worldvectorlogo.com/logos/openai-2.svg']
-    },
-    {
-      id: 'customer-support',
-      titleAr: 'وكيل الدعم الفني',
-      titleEn: 'Support Agent',
-      descriptionAr: 'يجيب على أسئلة العملاء من المستندات وقاعدة المعارف، ويتصاعد عند الحاجة.',
-      descriptionEn: 'Answers customer questions from docs and knowledge base, escalates when needed.',
-      tools: ['https://cdn.worldvectorlogo.com/logos/intercom.svg', 'https://cdn.worldvectorlogo.com/logos/hubspot.svg']
-    }
-  ];
-
-  const filteredTemplates = templates.filter(t => 
-    (isRTL ? t.titleAr : t.titleEn).toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { t, i18n } = useTranslation();
+  const { isDark } = useTheme();
 
   return (
-    <section className="py-16 px-4 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {isRTL ? 'تصفح القوالب الجاهزة' : 'Browse Ready Templates'}
-          </h2>
-          <div className="relative w-full md:w-96">
-            <i className={`ri-search-line absolute top-1/2 -translate-y-1/2 text-gray-400 ${isRTL ? 'right-4' : 'left-4'}`}></i>
-            <input
-              type="text"
-              placeholder={isRTL ? 'ابحث عن قالب...' : 'Search for a template...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'}`}
-            />
-          </div>
-        </div>
+    <section className="py-20 px-4 max-w-7xl mx-auto">
+      <div className="text-center mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          {i18n.language === 'ar' ? 'قوالب الوكلاء الجاهزة' : 'Ready-to-use Agent Templates'}
+        </h2>
+        <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          {i18n.language === 'ar' ? 'ابدأ فوراً باستخدام قوالب مصممة مسبقاً لأكثر المهام شيوعاً' : 'Start immediately with pre-designed templates for common tasks'}
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTemplates.map((template) => (
-            <motion.div
-              key={template.id}
-              whileHover={{ y: -5 }}
-              className="p-6 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 transition-all cursor-pointer group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
-                  {isRTL ? template.titleAr : template.titleEn}
-                </h3>
-                <div className="flex -space-x-2">
-                  {template.tools.map((tool, index) => (
-                    <img key={index} src={tool} alt="tool" className="w-6 h-6 rounded-full border-2 border-white bg-white" />
-                  ))}
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                {isRTL ? template.descriptionAr : template.descriptionEn}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-teal-600 bg-teal-50 px-3 py-1 rounded-full">
-                  {isRTL ? 'جاهز للتفعيل' : 'Ready to use'}
-                </span>
-                <button className="text-sm font-bold text-gray-900 flex items-center gap-1 group-hover:gap-2 transition-all">
-                  {isRTL ? 'استخدام القالب' : 'Use Template'}
-                  <i className={`ri-arrow-${isRTL ? 'left' : 'right'}-line`}></i>
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {templates.map((template, index) => (
+          <motion.div
+            key={template.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className={`p-6 rounded-3xl border transition-all hover:shadow-lg ${
+              isDark ? 'bg-gray-800/30 border-gray-700 hover:bg-gray-800/50' : 'bg-white border-gray-100 hover:shadow-gray-200/50'
+            }`}
+          >
+            <div className={`w-12 h-12 rounded-2xl ${template.color} flex items-center justify-center mb-6 text-white text-2xl shadow-lg`}>
+              <i className={template.icon}></i>
+            </div>
+            <h3 className="text-xl font-bold mb-2">{i18n.language === 'ar' ? template.titleAr : template.titleEn}</h3>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              {i18n.language === 'ar' ? template.descAr : template.descEn}
+            </p>
+            <button className="mt-6 text-primary font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+              {i18n.language === 'ar' ? 'استخدم هذا القالب' : 'Use this template'}
+              <i className={`ri-arrow-${i18n.language === 'ar' ? 'left' : 'right'}-line`}></i>
+            </button>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
