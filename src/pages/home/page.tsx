@@ -1,6 +1,7 @@
 import { useState, createContext, useContext, useLayoutEffect, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 
+// Lazy load components
 const CodeHero = lazy(() => import('./components/CodeHero'));
 const AgentsGrid = lazy(() => import('./components/AgentsGrid'));
 const AgentDetailModal = lazy(() => import('./components/AgentDetailModal'));
@@ -12,21 +13,11 @@ const AIMeetingModal = lazy(() => import('./components/AIMeetingModal'));
 const AccountConnectionsSection = lazy(() => import('./components/AccountConnectionsSection'));
 const AgentTemplatesSection = lazy(() => import('./components/AgentTemplatesSection'));
 const PartnerStrip = lazy(() => import('./components/PartnerStrip'));
+const LiveMeetingRoom = lazy(() => import('./components/LiveMeetingRoom'));
 
+// Hooks and Contexts
+import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
-
-export interface Agent {
-  id: string;
-  name: string;
-  role: string;
-  emoji: string;
-  color: string;
-  bg: string;
-  avatar?: string;
-  gender?: 'male' | 'female' | 'unspecified';
-  system?: string;
-  isCustom?: boolean;
-}
 
 interface ThemeContextType {
   isDark: boolean;
@@ -50,10 +41,10 @@ export default function HomePage() {
   const [isDark, setIsDark] = useState(false);
   const [hoverGender, setHoverGender] = useState<'male' | 'female' | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
-  const [customAgents, setCustomAgents] = useState<Agent[]>([]);
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+  const [isLiveMeetingOpen, setIsLiveMeetingOpen] = useState(false);
+  const [meetingData, setMeetingData] = useState<any>(null);
 
   useLayoutEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -74,58 +65,55 @@ export default function HomePage() {
     }
   };
 
-  const handleAgentCreated = (agent: Agent) => {
-    if (editingAgent) {
-      setCustomAgents(prev => prev.map(a => a.id === agent.id ? agent : a));
-    } else {
-      setCustomAgents(prev => [...prev, agent]);
-    }
-    setEditingAgent(null);
-    setIsCreateModalOpen(false);
-  };
-
-  const handleEditAgent = (agent: Agent) => {
-    setEditingAgent(agent);
-    setIsCreateModalOpen(true);
-  };
-
-  const handleDeleteAgent = (agentId: string) => {
-    setCustomAgents(prev => prev.filter(a => a.id !== agentId));
+  const handleStartMeeting = (data: any) => {
+    setMeetingData(data);
+    setIsMeetingModalOpen(false);
+    setIsLiveMeetingOpen(true);
   };
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme, hoverGender, setHoverGender }}>
       <main className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
-        <Suspense fallback={<div className="flex items-center justify-center h-screen">جار التحميل...</div>}>
-          <CodeHero onStartMeetingClick={() => setIsMeetingModalOpen(true)} />
-
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <CodeHero onMeetingClick={() => setIsMeetingModalOpen(true)} />
+          
           <div className="relative z-10">
-            <AgentsGrid
-              onAgentSelect={setSelectedAgent}
-              onCreateAgent={() => { setEditingAgent(null); setIsCreateModalOpen(true); }}
-              customAgents={customAgents}
-              onEditAgent={handleEditAgent}
-              onDeleteAgent={handleDeleteAgent}
-            />
-            <div className="py-10"><AccountConnectionsSection /></div>
-            <div className="py-10"><AgentTemplatesSection /></div>
+            <AgentsGrid onAgentClick={setSelectedAgent} onCreateClick={() => setIsCreateModalOpen(true)} />
+            
+            <div className="py-10">
+              <AccountConnectionsSection />
+            </div>
+
+            <div className="py-10">
+              <AgentTemplatesSection />
+            </div>
+
             <PartnerStrip />
             <PricingSection />
             <ReviewsSection />
             <CalendlySection onMeetingClick={() => setIsMeetingModalOpen(true)} />
           </div>
 
-          {isCreateModalOpen && (
-            <CreateAgentModal
-              onClose={() => { setIsCreateModalOpen(false); setEditingAgent(null); }}
-              onAgentCreated={handleAgentCreated}
-              editingAgent={editingAgent}
+          <CreateAgentModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+          <AgentDetailModal agent={selectedAgent} isOpen={!!selectedAgent} onClose={() => setSelectedAgent(null)} />
+          <AIMeetingModal 
+            isOpen={isMeetingModalOpen} 
+            onClose={() => setIsMeetingModalOpen(false)} 
+            onStartMeeting={handleStartMeeting}
+          />
+          {isLiveMeetingOpen && meetingData && (
+            <LiveMeetingRoom 
+              isOpen={isLiveMeetingOpen}
+              onClose={() => setIsLiveMeetingOpen(false)}
+              department={meetingData.department}
+              selectedAgents={meetingData.selectedAgents}
+              topic={meetingData.topic}
+              onMeetingComplete={(summary) => {
+                console.log('Meeting Complete:', summary);
+                setIsLiveMeetingOpen(false);
+              }}
             />
           )}
-          {selectedAgent && (
-            <AgentDetailModal agent={selectedAgent} onClose={() => setSelectedAgent(null)} />
-          )}
-          <AIMeetingModal isOpen={isMeetingModalOpen} onClose={() => setIsMeetingModalOpen(false)} />
         </Suspense>
       </main>
     </ThemeContext.Provider>
