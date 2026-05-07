@@ -6,7 +6,10 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 const PARTNER_FORM_URL = 'https://readdy.ai/api/form/d6eva2iohb161tfd9aj0';
 
@@ -36,7 +39,7 @@ export default function PartnerStrip() {
 
     setSubmitting(true);
     try {
-      // حفظ في Supabase
+      if (!supabase) throw new Error('missing-supabase-config');
       const { error: dbError } = await supabase
         .from('subscriptions')
         .insert([
@@ -48,21 +51,21 @@ export default function PartnerStrip() {
 
       if (dbError) throw dbError;
 
-      // إرسال إشعار للمالك
-      try {
-        await fetch(`${supabaseUrl}/functions/v1/send-subscription-notification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: email.trim(),
-            type: 'partner',
-          }),
-        });
-      } catch (notifError) {
-        console.error('Notification error:', notifError);
+      if (supabaseUrl) {
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-subscription-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: email.trim(),
+              type: 'partner',
+            }),
+          });
+        } catch (notifError) {
+          console.error('Notification error:', notifError);
+        }
       }
 
-      // إرسال للنموذج الحالي أيضاً
       const formData = new URLSearchParams();
       formData.append('email', email.trim());
       formData.append('type', 'partner_inquiry');
@@ -87,7 +90,6 @@ export default function PartnerStrip() {
   return (
     <section className="py-6 px-4">
       <div className="max-w-4xl mx-auto">
-
         {/* WhatsApp Contact */}
         <div className="flex justify-center mb-3">
           <a
@@ -106,7 +108,6 @@ export default function PartnerStrip() {
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
-          {/* Text */}
           <p
             className={`font-mono text-2xl md:text-3xl text-center md:text-start flex-shrink-0 font-extrabold`}
             style={{ color: '#8B0000' }}
@@ -117,7 +118,6 @@ export default function PartnerStrip() {
               : 'Looking for a business partner or investor'}
           </p>
 
-          {/* Email form */}
           <AnimatePresence mode="wait">
             {success ? (
               <motion.div
@@ -183,7 +183,6 @@ export default function PartnerStrip() {
           </AnimatePresence>
         </div>
 
-        {/* Error message */}
         {error && <p className="text-center font-mono text-xs text-red-500 mt-2">{error}</p>}
       </div>
     </section>

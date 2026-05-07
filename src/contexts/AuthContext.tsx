@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_PUBLIC_SUPABASE_URL,
-  import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY
-);
+const supabaseUrl = import.meta.env.VITE_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY;
+const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 interface User {
   id: string;
@@ -31,16 +33,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // IMPORTANT: Platform requirement — allow guest browsing.
-  // So we do NOT block the app while waiting for auth.
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     let active = true;
 
     supabase.auth
       .getSession()
       .then(({ data: { session } }) => {
         if (!active) return;
-        // If a session exists, hydrate user profile, otherwise just finish loading.
         if (session?.user) {
           void syncUserProfile(session.user);
         } else {
@@ -68,10 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
       subscription.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const syncUserProfile = async (authUser: any) => {
+    if (!supabase) return;
     try {
       const authId = authUser.id;
       const email = authUser.email || '';
@@ -170,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshUser = async () => {
+    if (!supabase) return;
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       await syncUserProfile(session.user);
@@ -177,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
     setUser(null);
   };
 

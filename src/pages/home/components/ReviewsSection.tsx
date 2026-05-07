@@ -6,7 +6,10 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 const NEWSLETTER_FORM_URL = 'https://readdy.ai/api/form/d6eun8iohb161tfd9a6g';
 
@@ -84,6 +87,10 @@ export default function ReviewsSection() {
 
   const fetchReviews = async () => {
     try {
+      if (!supabase) {
+        setLoadingReviews(false);
+        return;
+      }
       const { data, error } = await supabase
         .from('reviews')
         .select('*')
@@ -127,6 +134,7 @@ export default function ReviewsSection() {
 
     setSubmitting(true);
     try {
+      if (!supabase) throw new Error('missing-supabase-config');
       // إضافة التقييم مع is_approved = true تلقائياً
       const { data: insertedReview, error: insertError } = await supabase
         .from('reviews')
@@ -180,6 +188,7 @@ export default function ReviewsSection() {
 
     setNlSubmitting(true);
     try {
+      if (!supabase) throw new Error('missing-supabase-config');
       // حفظ في Supabase
       const { error: dbError } = await supabase
         .from('subscriptions')
@@ -192,21 +201,21 @@ export default function ReviewsSection() {
 
       if (dbError) throw dbError;
 
-      // إرسال إشعار للمالك
-      try {
-        await fetch(`${supabaseUrl}/functions/v1/send-subscription-notification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: nlEmail.trim(),
-            type: 'newsletter',
-          }),
-        });
-      } catch (notifError) {
-        console.error('Notification error:', notifError);
+      if (supabaseUrl) {
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-subscription-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: nlEmail.trim(),
+              type: 'newsletter',
+            }),
+          });
+        } catch (notifError) {
+          console.error('Notification error:', notifError);
+        }
       }
 
-      // إرسال للنموذج الحالي أيضاً
       const formData = new URLSearchParams();
       formData.append('email', nlEmail.trim());
 

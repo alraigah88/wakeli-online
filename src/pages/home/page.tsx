@@ -19,6 +19,26 @@ const LiveMeetingRoom = lazy(() => import('./components/LiveMeetingRoom'));
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 
+export interface Agent {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  roleAr: string;
+  roleEn: string;
+  descriptionAr: string;
+  descriptionEn: string;
+  avatar: string;
+  color: string;
+  category: string;
+  skills: string[];
+  isCustom?: boolean;
+  system?: string;
+  emoji?: string;
+  name?: string;
+  role?: string;
+  bg?: string;
+}
+
 interface ThemeContextType {
   isDark: boolean;
   toggleTheme: () => void;
@@ -41,7 +61,7 @@ export default function HomePage() {
   const [isDark, setIsDark] = useState(false);
   const [hoverGender, setHoverGender] = useState<'male' | 'female' | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [isLiveMeetingOpen, setIsLiveMeetingOpen] = useState(false);
   const [meetingData, setMeetingData] = useState<any>(null);

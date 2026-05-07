@@ -4,7 +4,7 @@ import { useTheme } from '../page';
 import type { Agent } from '../page';
 
 interface AgentDetailModalProps {
-  agent: Agent;
+  agent: Agent | null;
   onClose: () => void;
 }
 
@@ -43,6 +43,8 @@ export default function AgentDetailModal({ agent, onClose }: AgentDetailModalPro
   const { isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
+
+  if (!agent) return null;
 
   const avatarSrc = agent.isCustom
     ? agent.avatar
